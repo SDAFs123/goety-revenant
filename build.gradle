@@ -1,0 +1,112 @@
+plugins {
+    id 'net.minecraftforge.gradle' version '6.0.54'
+    id 'eclipse'
+    id 'idea'
+    id 'maven-publish'
+}
+
+version = mod_version
+group = mod_group_id
+archivesBaseName = mod_id
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+
+minecraft {
+    mappings channel: mapping_channel, version: mapping_version
+    copyIdeResources = true
+    runs {
+        client {
+            workingDirectory project.file('run')
+            property 'forge.logging.console.level', 'debug'
+            mods { "${mod_id}" { source sourceSets.main } }
+        }
+        server {
+            workingDirectory project.file('run')
+            property 'forge.logging.console.level', 'debug'
+            mods { "${mod_id}" { source sourceSets.main } }
+        }
+        data {
+            workingDirectory project.file('run')
+            args '--mod', mod_id, '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
+            mods { "${mod_id}" { source sourceSets.main } }
+        }
+    }
+}
+
+sourceSets.main.resources { srcDir 'src/generated/resources' }
+
+repositories {
+    // 本机到中央仓/插件门户很慢，优先走阿里云镜像，命中不到再回落到原仓。
+    maven { name = 'AliyunPublic'; url = 'https://maven.aliyun.com/repository/public' }
+    mavenCentral()
+    maven { name = 'MinecraftForge'; url = 'https://maven.minecraftforge.net/' }
+    // Goety 本体发布在 Modrinth maven（官方兼容模组 Goety_Cataclysm 也是这么依赖的）
+    maven { name = 'Modrinth'; url = 'https://api.modrinth.com/maven'; content { includeGroup 'maven.modrinth' } }
+    maven { name = 'CurseMaven'; url = 'https://www.cursemaven.com'; content { includeGroup 'curse.maven' } }
+    maven { name = 'Curios'; url = 'https://maven.theillusivec4.top/' }
+    maven { name = 'BlameJared'; url = 'https://maven.blamejared.com/' }
+    maven { name = 'ModMaven'; url = 'https://modmaven.dev' }
+    // GeckoLib 官方仓库（模型/动画全部走它）
+    maven { name = 'GeckoLib'; url = 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/' }
+}
+
+dependencies {
+    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+
+    // ===== Goety 本体：编译期 + 开发运行期都要（回魂的内容全部挂在它上面）=====
+    implementation fg.deobf("maven.modrinth:goety:${goety_version}")
+
+    // ===== Goety 的硬前置 =====
+    implementation fg.deobf("top.theillusivec4.curios:curios-forge:${curios_version}")
+    implementation fg.deobf("vazkii.patchouli:Patchouli:${patchouli_version}")
+
+    // ===== GeckoLib：所有模型/动画 =====
+    implementation fg.deobf("software.bernie.geckolib:geckolib-forge-${minecraft_version}:${geckolib_version}")
+
+    // ===== Malum（灵灾）：只编译期可见，用来读它的 API 签名。
+    // compileOnly 不进 jar、不写进 mods.toml，所以缺席时零影响；代码里照旧走反射/软依赖。=====
+    compileOnly fg.deobf("maven.modrinth:malum:${malum_version}")
+
+    // ===== Cloth Config（配置界面，**可选依赖**）=====
+    // 编译期用整合包里那份 jar（项目 libs/ 目录），运行期由整合包提供；
+    // 没装 Cloth 时：配置值仍从 json 读，只是没有图形界面（代码里做了双层守卫）。
+    compileOnly files('libs/cloth-config-11.1.136-forge.jar')
+
+    // ===== JEI：编译期只用 API，运行期挂完整包 =====
+    compileOnly fg.deobf("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}")
+    compileOnly fg.deobf("mezz.jei:jei-${minecraft_version}-forge-api:${jei_version}")
+    runtimeOnly fg.deobf("mezz.jei:jei-${minecraft_version}-forge:${jei_version}")
+}
+
+def replaceProperties = [
+    minecraft_version      : minecraft_version,
+    forge_version          : forge_version,
+    minecraft_version_range: minecraft_version_range,
+    forge_version_range    : forge_version_range,
+    loader_version_range   : loader_version_range,
+    mod_id                 : mod_id,
+    mod_name               : mod_name,
+    mod_license            : mod_license,
+    mod_version            : mod_version,
+    mod_authors            : mod_authors,
+    mod_description        : mod_description,
+]
+
+tasks.named('processResources', ProcessResources).configure {
+    inputs.properties replaceProperties
+    filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) { expand replaceProperties }
+}
+
+tasks.named('jar', Jar).configure {
+    manifest {
+        attributes([
+            'Specification-Title'   : mod_id,
+            'Specification-Vendor'  : mod_authors,
+            'Specification-Version' : '1',
+            'Implementation-Title'  : project.name,
+            'Implementation-Version': project.jar.archiveVersion,
+            'Implementation-Vendor' : mod_authors,
+        ])
+    }
+    finalizedBy 'reobfJar'
+}

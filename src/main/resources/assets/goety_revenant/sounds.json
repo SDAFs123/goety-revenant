@@ -1,0 +1,17 @@
+{
+  "whisper_en_1": {
+    "subtitle": "subtitles.goety_revenant.whisper_en_1",
+    "sounds": [ { "name": "goety_revenant:whisper_en_1", "stream": false } ]
+  },
+  "whisper_en_2": {
+    "subtitle": "subtitles.goety_revenant.whisper_en_2",
+    "sounds": [ { "name": "goety_revenant:whisper_en_2", "stream": false } ]
+  },
+  "whisper_en_3": {
+    "subtitle": "subtitles.goety_revenant.whisper_en_3",
+    "sounds": [ { "name": "goety_revenant:whisper_en_3", "stream": false } ]
+  },
+  "whisper_1": { "subtitle": "subtitles.goety_revenant.whisper_1", "sounds": [ { "name": "goety_revenant:whisper_1", "stream": false } ] },
+  "whisper_2": { "subtitle": "subtitles.goety_revenant.whisper_2", "sounds": [ { "name": "goety_revenant:whisper_2", "stream": false } ] },
+  "whisper_3": { "subtitle": "subtitles.goety_revenant.whisper_3", "sounds": [ { "name": "goety_revenant:whisper_3", "stream": false } ] }
+}

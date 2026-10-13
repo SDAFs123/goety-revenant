@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "mouth_open=false,eyes=false": {
+      "model": "goety_revenant:block/flesh_altar"
+    },
+    "mouth_open=false,eyes=true": {
+      "model": "goety_revenant:block/flesh_altar"
+    },
+    "mouth_open=true,eyes=false": {
+      "model": "goety_revenant:block/flesh_altar"
+    },
+    "mouth_open=true,eyes=true": {
+      "model": "goety_revenant:block/flesh_altar"
+    }
+  }
+}

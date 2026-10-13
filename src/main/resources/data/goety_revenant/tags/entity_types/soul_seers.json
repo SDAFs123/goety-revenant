@@ -1,0 +1,117 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "goety:border_wraith",
+      "required": false
+    },
+    {
+      "id": "goety:border_wraith_servant",
+      "required": false
+    },
+    {
+      "id": "goety:muck_wraith",
+      "required": false
+    },
+    {
+      "id": "goety:muck_wraith_servant",
+      "required": false
+    },
+    {
+      "id": "goety:reaper",
+      "required": false
+    },
+    {
+      "id": "goety:reaper_servant",
+      "required": false
+    },
+    {
+      "id": "goety:haunted_armor",
+      "required": false
+    },
+    {
+      "id": "goety:haunted_armor_servant",
+      "required": false
+    },
+    {
+      "id": "goety:haunted_skull",
+      "required": false
+    },
+    {
+      "id": "goety:haunt",
+      "required": false
+    },
+    {
+      "id": "goety:grave_golem",
+      "required": false
+    },
+    {
+      "id": "goety:damned",
+      "required": false
+    },
+    {
+      "id": "goety:wight",
+      "required": false
+    },
+    {
+      "id": "goety:irk",
+      "required": false
+    },
+    {
+      "id": "goety:irk_servant",
+      "required": false
+    },
+    {
+      "id": "goety:sprite",
+      "required": false
+    },
+    {
+      "id": "goety:watchling",
+      "required": false
+    },
+    {
+      "id": "goety:watchling_servant",
+      "required": false
+    },
+    {
+      "id": "goety:snareling",
+      "required": false
+    },
+    {
+      "id": "goety:snareling_servant",
+      "required": false
+    },
+    {
+      "id": "goety:blastling",
+      "required": false
+    },
+    {
+      "id": "goety:blastling_servant",
+      "required": false
+    },
+    {
+      "id": "goety:malghast",
+      "required": false
+    },
+    {
+      "id": "goety:bone_lord",
+      "required": false
+    },
+    {
+      "id": "goety:skull_lord",
+      "required": false
+    },
+    {
+      "id": "goety:haunted_broom",
+      "required": false
+    },
+    {
+      "id": "goety:haunted_armor_stand",
+      "required": false
+    },
+    {
+      "id": "goety:haunted_painting",
+      "required": false
+    }
+  ]
+}

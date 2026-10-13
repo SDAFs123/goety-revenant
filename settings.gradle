@@ -1,0 +1,12 @@
+// 本机直连 services.gradle.org / downloads.gradle.org 会超时，走阿里云镜像更稳。
+// 本地已有 JDK 17（~/.gradle/jdks），因此去掉 foojay 自动装 JDK 的插件，少一个插件门户依赖。
+pluginManagement {
+    repositories {
+        maven { name = 'AliyunGradlePlugin'; url = 'https://maven.aliyun.com/repository/gradle-plugin' }
+        maven { name = 'AliyunPublic'; url = 'https://maven.aliyun.com/repository/public' }
+        maven { name = 'MinecraftForge'; url = 'https://maven.minecraftforge.net/' }
+        gradlePluginPortal()
+    }
+}
+
+rootProject.name = "goety-revenant"

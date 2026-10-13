@@ -1,0 +1,17 @@
+{
+  "type": "goety_revenant:white_void",
+  "generator": {
+    "type": "minecraft:flat",
+    "settings": {
+      "layers": [
+        { "block": "goety_revenant:white_light", "height": 3 }
+      ],
+      "biome": "goety_revenant:white_plain",
+      "features": false,
+      "lakes": false,
+      "structures": {
+        "structures": {}
+      }
+    }
+  }
+}

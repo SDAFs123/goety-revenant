@@ -1,0 +1,113 @@
+{
+  "$schema": "datatip.schema.json",
+
+  "goety_revenant:flesh_heart": {
+    "type": "vbox",
+    "gap": 2,
+    "children": [
+      {
+        "type": "text",
+        "text": "它还在跳。",
+        "color": "#B01B22",
+        "italic": true
+      },
+      {
+        "type": "divider",
+        "color": "#4A060B"
+      },
+      {
+        "type": "progress",
+        "progress": 0.6,
+        "width": 96,
+        "label": "血肉",
+        "labelAlign": "right"
+      },
+      {
+        "type": "text",
+        "text": "这不是你身上原来那颗。",
+        "color": "gray",
+        "italic": true,
+        "shift": true
+      }
+    ]
+  },
+
+  "goety_revenant:flesh_totem": {
+    "type": "vbox",
+    "gap": 2,
+    "children": [
+      {
+        "type": "text",
+        "text": "把命交出去，换一次不死。",
+        "color": "#8A5A5E"
+      },
+      {
+        "type": "divider",
+        "color": "#4A060B"
+      },
+      {
+        "type": "text",
+        "text": "用过一次之后，它会记得。",
+        "color": "gray",
+        "italic": true,
+        "shift": true
+      }
+    ]
+  },
+
+  "goety_revenant:*_brew": {
+    "type": "vbox",
+    "gap": 2,
+    "children": [
+      {
+        "type": "text",
+        "text": "一口下去，你就不完全是原来的东西了。",
+        "color": "#9A8A7A",
+        "italic": true
+      }
+    ]
+  },
+
+  "goety_revenant:soul_stained_steel_totem": {
+    "type": "vbox",
+    "gap": 2,
+    "children": [
+      {
+        "type": "text",
+        "text": "钢里染着别人的魂。",
+        "color": "#52E8DC"
+      },
+      {
+        "type": "text",
+        "text": "那些魂还在里面看着。",
+        "color": "gray",
+        "italic": true,
+        "shift": true
+      }
+    ]
+  },
+
+  "goety_revenant:flesh_altar": {
+    "type": "vbox",
+    "gap": 2,
+    "children": [
+      {
+        "type": "text",
+        "text": "放上去，它自己知道该怎么做。",
+        "color": "#8A5A5E"
+      }
+    ]
+  },
+
+  "goety_revenant:devour_pedestal": {
+    "type": "vbox",
+    "gap": 2,
+    "children": [
+      {
+        "type": "text",
+        "text": "喂它东西，它会替你吃下去。",
+        "color": "#8A5A5E"
+      }
+    ]
+  }
+}

@@ -1,0 +1,305 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "goety:necromancer",
+      "required": false
+    },
+    {
+      "id": "goety:necromancer_servant",
+      "required": false
+    },
+    {
+      "id": "goety:cairn_necromancer",
+      "required": false
+    },
+    {
+      "id": "goety:cairn_necromancer_servant",
+      "required": false
+    },
+    {
+      "id": "goety:mossy_necromancer",
+      "required": false
+    },
+    {
+      "id": "goety:mossy_necromancer_servant",
+      "required": false
+    },
+    {
+      "id": "goety:drowned_necromancer_servant",
+      "required": false
+    },
+    {
+      "id": "goety:warlock",
+      "required": false
+    },
+    {
+      "id": "goety:warlock_servant",
+      "required": false
+    },
+    {
+      "id": "goety:heretic",
+      "required": false
+    },
+    {
+      "id": "goety:heretic_servant",
+      "required": false
+    },
+    {
+      "id": "goety:frayed",
+      "required": false
+    },
+    {
+      "id": "goety:frayed_servant",
+      "required": false
+    },
+    {
+      "id": "goety:rattled",
+      "required": false
+    },
+    {
+      "id": "goety:rattled_servant",
+      "required": false
+    },
+    {
+      "id": "goety:apostle",
+      "required": false
+    },
+    {
+      "id": "goety:summon_apostle",
+      "required": false
+    },
+    {
+      "id": "goety:heresiarch",
+      "required": false
+    },
+    {
+      "id": "goety:vizier",
+      "required": false
+    },
+    {
+      "id": "goety:vizier_clone",
+      "required": false
+    },
+    {
+      "id": "goety:minister",
+      "required": false
+    },
+    {
+      "id": "goety:crone",
+      "required": false
+    },
+    {
+      "id": "goety:sorcerer",
+      "required": false
+    },
+    {
+      "id": "goety:preacher",
+      "required": false
+    },
+    {
+      "id": "goety:conquillager",
+      "required": false
+    },
+    {
+      "id": "goety:envioker",
+      "required": false
+    },
+    {
+      "id": "goety:inquillager",
+      "required": false
+    },
+    {
+      "id": "goety:reprobate",
+      "required": false
+    },
+    {
+      "id": "goety:ravaged",
+      "required": false
+    },
+    {
+      "id": "goety:tormentor",
+      "required": false
+    },
+    {
+      "id": "goety:blackguard_servant",
+      "required": false
+    },
+    {
+      "id": "goety:vanguard_servant",
+      "required": false
+    },
+    {
+      "id": "goety:royal_guard_servant",
+      "required": false
+    },
+    {
+      "id": "goety:imperial_guard_servant",
+      "required": false
+    },
+    {
+      "id": "goety:piker_servant",
+      "required": false
+    },
+    {
+      "id": "goety:mountaineer_servant",
+      "required": false
+    },
+    {
+      "id": "goety:skeleton_pillager",
+      "required": false
+    },
+    {
+      "id": "goety:skeleton_servant",
+      "required": false
+    },
+    {
+      "id": "goety:stray_servant",
+      "required": false
+    },
+    {
+      "id": "goety:husk_servant",
+      "required": false
+    },
+    {
+      "id": "goety:drowned_servant",
+      "required": false
+    },
+    {
+      "id": "goety:frozen_zombie_servant",
+      "required": false
+    },
+    {
+      "id": "goety:jungle_zombie_servant",
+      "required": false
+    },
+    {
+      "id": "goety:sunken_skeleton_servant",
+      "required": false
+    },
+    {
+      "id": "goety:mossy_skeleton_servant",
+      "required": false
+    },
+    {
+      "id": "goety:phantom_servant",
+      "required": false
+    },
+    {
+      "id": "goety:vex_servant",
+      "required": false
+    },
+    {
+      "id": "goety:hostile_zombie_vindicator",
+      "required": false
+    },
+    {
+      "id": "goety:hostile_black_wolf",
+      "required": false
+    },
+    {
+      "id": "goety:skeleton_villager_servant",
+      "required": false
+    },
+    {
+      "id": "goety:crypt_slime",
+      "required": false
+    },
+    {
+      "id": "goety:wraith",
+      "required": false
+    },
+    {
+      "id": "minecraft:zombie",
+      "required": false
+    },
+    {
+      "id": "minecraft:husk",
+      "required": false
+    },
+    {
+      "id": "minecraft:drowned",
+      "required": false
+    },
+    {
+      "id": "minecraft:zombie_villager",
+      "required": false
+    },
+    {
+      "id": "minecraft:skeleton",
+      "required": false
+    },
+    {
+      "id": "minecraft:stray",
+      "required": false
+    },
+    {
+      "id": "minecraft:wither_skeleton",
+      "required": false
+    },
+    {
+      "id": "minecraft:zombified_piglin",
+      "required": false
+    },
+    {
+      "id": "minecraft:zoglin",
+      "required": false
+    },
+    {
+      "id": "minecraft:phantom",
+      "required": false
+    },
+    {
+      "id": "minecraft:skeleton_horse",
+      "required": false
+    },
+    {
+      "id": "minecraft:zombie_horse",
+      "required": false
+    },
+    {
+      "id": "goety_revenant:revenant",
+      "required": false
+    },
+    {
+      "id": "goety_revelation:wither_servant",
+      "required": false
+    },
+    {
+      "id": "goety_revelation:phantom_servant",
+      "required": false
+    },
+    {
+      "id": "goetyawaken:wight_servant",
+      "required": false
+    },
+    {
+      "id": "goetyawaken:zombie_royal_guard_servant",
+      "required": false
+    },
+    {
+      "id": "goetyawaken:zombie_mountaineer_servant",
+      "required": false
+    },
+    {
+      "id": "goetyawaken:zombie_neollager_servant",
+      "required": false
+    },
+    {
+      "id": "goetyawaken:zombie_darkguard",
+      "required": false
+    },
+    {
+      "id": "goetyawaken:skeleton_vanguard",
+      "required": false
+    },
+    {
+      "id": "goetyawaken:skeleton_tower_guard_servant",
+      "required": false
+    },
+    {
+      "id": "goetyawaken:wither_servant",
+      "required": false
+    }
+  ]
+}

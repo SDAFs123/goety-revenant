@@ -1,0 +1,61 @@
+modLoader="javafml"
+loaderVersion="${loader_version_range}"
+license="${mod_license}"
+
+[[mods]]
+modId="${mod_id}"
+version="${mod_version}"
+displayName="Goety: Revenant | 诡厄巫法：回魂"
+authors="${mod_authors}"
+description='''整合包特供的诡厄巫法（Goety - The Dark Arts）附属。围绕「回魂」主题：灵魂留存与召回、回魂系法器与长袍、回魂者生物。'''
+
+[[dependencies.${mod_id}]]
+    modId="forge"
+    mandatory=true
+    versionRange="${forge_version_range}"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.${mod_id}]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.${mod_id}]]
+    modId="goety"
+    mandatory=true
+    versionRange="[2.5.0,)"
+    ordering="AFTER"
+    side="BOTH"
+
+[[dependencies.${mod_id}]]
+    modId="geckolib"
+    mandatory=true
+    versionRange="[4.4,)"
+    ordering="AFTER"
+    side="BOTH"
+
+[[dependencies.${mod_id}]]
+    modId="curios"
+    mandatory=true
+    versionRange="[5.7.0,)"
+    ordering="AFTER"
+    side="BOTH"
+
+[[dependencies.${mod_id}]]
+    modId="cloth_config"
+    mandatory=false
+    versionRange="[11,)"
+    ordering="AFTER"
+    side="CLIENT"
+
+[[dependencies.${mod_id}]]
+    modId="patchouli"
+    mandatory=false
+    # 注意：Patchouli 的版本号是 "1.20.1-85-FORGE" 这种形式，
+    # 写 "[84,)" 会被 Maven 版本比较判成 1 < 84 而不匹配 —— 必须带上 1.20.1 前缀。
+    versionRange="[1.20.1,)"
+    ordering="AFTER"
+    side="BOTH"

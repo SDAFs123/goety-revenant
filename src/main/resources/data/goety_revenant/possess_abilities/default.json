@@ -1,0 +1,39 @@
+{
+  "_comment": "附身适配层：加生物就加一段，不用改代码。没配置的生物自动降级（只用通用层移动/外观）。",
+  "blacklist": [
+    "minecraft:ender_dragon",
+    "minecraft:wither"
+  ],
+  "mobs": {
+    "minecraft:blaze": {
+      "abilities": [
+        {
+          "type": "effect",
+          "effect": "minecraft:fire_resistance"
+        },
+        {
+          "type": "attribute",
+          "attribute": "minecraft:generic.attack_damage",
+          "value": 6
+        }
+      ]
+    },
+    "minecraft:iron_golem": {
+      "abilities": [
+        {
+          "type": "attribute",
+          "attribute": "minecraft:generic.armor",
+          "value": 20
+        }
+      ]
+    },
+    "minecraft:creeper": {
+      "abilities": [
+        {
+          "type": "command",
+          "command": "effect give @s minecraft:invisibility 1 0 true"
+        }
+      ]
+    }
+  }
+}

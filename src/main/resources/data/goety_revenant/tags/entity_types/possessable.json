@@ -1,0 +1,70 @@
+{
+  "replace": false,
+  "values": [
+    "goety_revenant:revenant",
+    {
+      "id": "goety_revelation:wither_servant",
+      "required": false
+    },
+    {
+      "id": "goety_revelation:phantom_servant",
+      "required": false
+    },
+    {
+      "id": "goety_revelation:summon_apollyon",
+      "required": false
+    },
+    {
+      "id": "goetyawaken:wight_servant",
+      "required": false
+    },
+    {
+      "id": "goetyawaken:zombie_royal_guard_servant",
+      "required": false
+    },
+    {
+      "id": "goetyawaken:zombie_mountaineer_servant",
+      "required": false
+    },
+    {
+      "id": "goetyawaken:zombie_neollager_servant",
+      "required": false
+    },
+    {
+      "id": "goetyawaken:zombie_darkguard",
+      "required": false
+    },
+    {
+      "id": "goetyawaken:skeleton_vanguard",
+      "required": false
+    },
+    {
+      "id": "goetyawaken:skeleton_tower_guard_servant",
+      "required": false
+    },
+    {
+      "id": "goetyawaken:giant_servant",
+      "required": false
+    },
+    {
+      "id": "goetyawaken:pale_golem_servant",
+      "required": false
+    },
+    {
+      "id": "goetyawaken:wither_servant",
+      "required": false
+    },
+    {
+      "id": "goetyawaken:obsidian_monolith_servant",
+      "required": false
+    },
+    {
+      "id": "goetyawaken:seismic_monolith",
+      "required": false
+    },
+    {
+      "id": "goetyawaken:subjugated_sentinel",
+      "required": false
+    }
+  ]
+}
