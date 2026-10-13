@@ -88,8 +88,37 @@
 
 ## 待办
 
-- [ ] 物品 / 方块逐个核对用途（有配方吗、有效果吗、进创造栏了吗）
+- [x] **物品层已核对**（见 §七）—— 2 个完全无效
+- [ ] 方块层逐个核对
 - [ ] 系统级触发链：回魂 / 魂树 / 序列 / 血肉线 / 元素反应 / 血肉仪式 / 神识 / 灵化 / 灵魂温度 / 星象
 - [ ] `SOUL_WARD` 定性（该做没做完 / 已被取代）
 - [ ] `UPGRADE_CYCLE` 补上切换逻辑（用户明确要过的功能）
 - [ ] `broadcastSoulAppearance` 删或标注弃用
+
+## 七、物品层 —— ★ 2 个完全无效，其余接上
+
+19 个物品全部进了创造栏，但"进创造栏"不等于"有效果"。逐个追实现类和外部引用：
+
+| 物品 | 实现类 | 行数 | 关键方法 | 外部引用 | 判定 |
+|---|---|---|---|---|---|
+| **`SOUL_TALISMAN`（聚魂护符）** | **原版 `Item`** | — | **无** | **0 处** | ★ **完全无效** |
+| **`SOUL_HARVEST_CHARM`（精魂收割护符）** | `SoulHarvestCharmItem` | 30 | 只有 `appendHoverText` | **0 处** | ★ **完全无效** |
+| `FLESH_HEART`（血肉之心） | `FleshHeartItem` | 33 | 只有 `appendHoverText` | **5 处** | ✅ 有效（血肉之笼的槽位判定） |
+| `FLESH_TOTEM`（血肉图腾） | `FleshTotemItem` | 87 | `capacity` / `inventoryTick` | **11 处** | ✅ 有效（血肉能量容器） |
+| `SOUL_STAINED_STEEL_TOTEM` | `SoulStainedSteelTotemItem` | 117 | `getMaxSouls` / `inventoryTick` | ✅ | ✅ 有效 |
+| `REVENANT_STAFF` | `RevenantStaffItem` | 24 | `getSpellType` | ✅ | ✅（走本体施法接口） |
+| `SOUL_RECALL_FOCUS` | `SoulRecallFocusItem` | 26 | `getSpell` | ✅ | ✅ |
+| `CORPSE_STORE_FOCUS` | `CorpseStoreFocusItem` | 26 | `getSpell` | ✅ | ✅ |
+| `REVENANT_*`（装备 4 件） | `RevenantRobeItem` | 27 | `getSoulDiscount` | ✅ | ✅ |
+| `SPIRIT_CONVERTER` / `FLESH_CAGE` / `FLESH_ALTAR` / `DEVOUR_PEDESTAL` / `BLOOD_VESSEL` | 各方块类 | — | — | ✅ | ✅ |
+| `WHITE_LIGHT` | `BlockItem` | — | — | ✅ | ✅（纯装饰方块） |
+| `REVENANT_SPAWN_EGG` | `ForgeSpawnEggItem` | — | — | ✅ | ✅ |
+
+### ⚠️ 两个死物都是用户明确要求过的功能
+
+| 用户原话（2026-09-27） | 现状 |
+|---|---|
+| 「**聚魂护符修改为增加获取灵魂能量的护符，增加 5%**」 | `SOUL_TALISMAN` 是原版 `Item`，**一行逻辑都没有** → **没做** |
+| 「精魂收割物品（本模组与 Iron 的法术与魔法书的武器、工具）`#malum:soul_hunter_weapon`…**增加击杀敌人时的精魂掉落**」 | `SoulHarvestCharmItem` **只有 tooltip**，没接进任何击杀结算 → **没做** |
+
+**（注意）**：这两个不是"废弃设计"，是**用户要的功能没有实现** —— 与七窍那批性质不同。
