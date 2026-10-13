@@ -28,6 +28,10 @@
     {
       "id": "born_in_chaos_v1:nightmare_scythe",
       "required": false
+    },
+    {
+      "id": "malum:soul_of_a_scythe",
+      "required": false
     }
   ]
 }

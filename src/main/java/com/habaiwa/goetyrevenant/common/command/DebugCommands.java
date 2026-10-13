@@ -133,6 +133,76 @@ public final class DebugCommands {
     }
 
     /** 放一遍那句话的低语（{@code grdebug whisper}）—— 调音效时最常用的一条。 */
+    /**
+     * **诊断：这个物品认不认那些附魔**（`/grdebug enchant`，手持物品执行）。
+     *
+     * <p>镰刀附魔互通涉及三层，任何一层没通都会表现成"没反应"，而游戏里看不出是哪层：</p>
+     * <ol>
+     *   <li><b>标签层</b>：Goety 镰刀在不在 `#malum:scythe` 里（靠我们的数据包追加）</li>
+     *   <li><b>物品层</b>：这个物品本身能不能被附魔（`isEnchantable` / 附魔性）</li>
+     *   <li><b>附魔层</b>：那条附魔的 `canEnchant` 认不认它</li>
+     * </ol>
+     */
+    private static int enchantDiag(CommandContext<CommandSourceStack> ctx) {
+        ServerPlayer player;
+        try {
+            player = ctx.getSource().getPlayerOrException();
+        } catch (Exception e) {
+            ctx.getSource().sendFailure(Component.literal("只能在游戏里用（手持物品执行）"));
+            return 0;
+        }
+        var src = ctx.getSource();
+        ItemStack stack = player.getMainHandItem();
+        if (stack.isEmpty()) {
+            src.sendFailure(Component.literal("主手是空的 —— 拿一把镰刀再执行"));
+            return 0;
+        }
+        src.sendSuccess(() -> Component.literal("=== 附魔互通诊断 ===").withStyle(ChatFormatting.GOLD), false);
+        src.sendSuccess(() -> Component.literal("物品: " + net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem())), false);
+
+        // ① 标签层
+        String[] tags = {"malum:scythe", "malum:soul_hunter_weapon", "malum:magic_capable_weapon",
+                "malum:staff", "goety_revenant:scythes", "forge:tools/swords"};
+        for (String t : tags) {
+            String[] parts = t.split(":", 2);
+            net.minecraft.tags.TagKey<net.minecraft.world.item.Item> key = net.minecraft.tags.TagKey.create(
+                    net.minecraft.core.registries.Registries.ITEM,
+                    new net.minecraft.resources.ResourceLocation(parts[0], parts[1]));
+            boolean in = stack.is(key);
+            src.sendSuccess(() -> Component.literal((in ? "  [在] " : "  [  ] ") + "#" + t)
+                    .withStyle(in ? ChatFormatting.GREEN : ChatFormatting.DARK_GRAY), false);
+        }
+
+        // ② 物品层
+        int enchVal = stack.getItem().getEnchantmentValue();
+        boolean enchantable = stack.isEnchantable();
+        src.sendSuccess(() -> Component.literal("附魔性: " + enchVal + "  可附魔: " + enchantable)
+                .withStyle(enchVal > 0 ? ChatFormatting.GREEN : ChatFormatting.RED), false);
+
+        // ③ 附魔层：Malum / Goety 的附魔逐条判
+        int ok = 0;
+        for (net.minecraft.world.item.enchantment.Enchantment ench
+                : net.minecraft.core.registries.BuiltInRegistries.ENCHANTMENT) {
+            var id = net.minecraft.core.registries.BuiltInRegistries.ENCHANTMENT.getKey(ench);
+            if (id == null || (!id.getNamespace().equals("malum") && !id.getNamespace().equals("goety"))) {
+                continue;
+            }
+            boolean can = ench.canEnchant(stack);
+            boolean table = ench.canApplyAtEnchantingTable(stack);
+            if (can) {
+                ok++;
+            }
+            String text = (can ? "  [可] " : "  [  ] ") + id
+                    + "   铁砧:" + (can ? "是" : "否") + "  附魔台:" + (table ? "是" : "否");
+            src.sendSuccess(() -> Component.literal(text)
+                    .withStyle(can ? ChatFormatting.GREEN : ChatFormatting.DARK_GRAY), false);
+        }
+        int fok = ok;
+        src.sendSuccess(() -> Component.literal("认得这个物品的跨模组附魔: " + fok + " 条")
+                .withStyle(fok > 0 ? ChatFormatting.GREEN : ChatFormatting.RED), false);
+        return 1;
+    }
+
     private static int whisper(CommandContext<CommandSourceStack> ctx) {
         return sound(ctx, "whisper");
     }
@@ -194,6 +264,9 @@ public final class DebugCommands {
                                 .suggests(DebugCommands::soundSuggestions)
                                 .executes(DebugCommands::sound)))
                 .then(Commands.literal("whisper").executes(DebugCommands::whisper))
+                // **诊断镰刀附魔互通** —— 手持物品打这条，看它到底在不在那些标签里、
+                // 每个 Malum/Goety 附魔认不认它。互通出问题时先看这里。
+                .then(Commands.literal("enchant").executes(DebugCommands::enchantDiag))
                 // **血肉线**：调试三条路的进度（mutation / spirit / silicon / clear）
                 .then(Commands.literal("flesh")
                         .executes(DebugCommands::fleshStatus)
