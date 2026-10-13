@@ -418,6 +418,104 @@ public final class ScytheCompat {
      * 改用 {@code EnchantmentHelper#isEnchantmentCompatible(Collection, Enchantment)}，
      * 它是公开的、内部走同一套冲突规则。</p>
      */
+    /* ------------------------------------------------------------------ */
+    /*  Malum 的「回旋 / 飞腾」在我们的镰刀上也要能用                        */
+    /* ------------------------------------------------------------------ */
+
+    /** 反射缓存：ReboundEnchantment.throwScythe。 */
+    private static java.lang.reflect.Method REBOUND_THROW;
+    /** 反射缓存：AscensionEnchantment.triggerAscension。 */
+    private static java.lang.reflect.Method ASCENSION_TRIGGER;
+    private static boolean abilityResolved;
+    private static boolean abilityFailed;
+
+    private static void resolveAbility() {
+        if (abilityResolved || abilityFailed) {
+            return;
+        }
+        try {
+            Class<?> rebound = Class.forName(
+                    "com.sammy.malum.common.enchantment.scythe.ReboundEnchantment");
+            REBOUND_THROW = rebound.getMethod("throwScythe",
+                    net.minecraft.world.level.Level.class,
+                    net.minecraft.world.entity.player.Player.class,
+                    net.minecraft.world.InteractionHand.class,
+                    ItemStack.class);
+            Class<?> ascension = Class.forName(
+                    "com.sammy.malum.common.enchantment.scythe.AscensionEnchantment");
+            ASCENSION_TRIGGER = ascension.getMethod("triggerAscension",
+                    net.minecraft.world.level.Level.class,
+                    net.minecraft.world.entity.player.Player.class,
+                    net.minecraft.world.InteractionHand.class,
+                    ItemStack.class);
+            abilityResolved = true;
+        } catch (Throwable t) {
+            abilityFailed = true;
+        }
+    }
+
+    private static int enchantLevel(ItemStack stack, String id) {
+        Enchantment e = BuiltInRegistries.ENCHANTMENT.get(new ResourceLocation(MalumCompat.MALUM, id));
+        return e == null ? 0 : stack.getEnchantmentLevel(e);
+    }
+
+    /**
+     * **右键触发「回旋」和「飞腾」** —— 在**我们的**镰刀上。
+     *
+     * <h3>为什么需要这一段</h3>
+     * <p>Malum 把这两个附魔的行为写在 {@code MalumScytheItem.use()} 里
+     * （反编译确认：引用 {@code ReboundEnchantment} 的只有 {@code MalumScytheItem}
+     * 和回旋镖实体；引用 {@code AscensionEnchantment} 的只有 {@code MalumScytheItem}）。
+     * Goety 的镰刀不是那个类的子类，所以**附魔挂上了也没有触发点** ——
+     * 用户 2026-10-14 反馈的「创造强行附魔给不祥镰刀**回旋一点用也没有**」就是这个原因。</p>
+     *
+     * <p>两个方法都是 {@code public static}，直接反射调用：</p>
+     * <ul>
+     *   <li>{@code ReboundEnchantment.throwScythe(Level, Player, InteractionHand, ItemStack)}</li>
+     *   <li>{@code AscensionEnchantment.triggerAscension(Level, Player, InteractionHand, ItemStack)}</li>
+     * </ul>
+     *
+     * <p><b>不抢 Malum 自己镰刀的触发</b>：原生 Malum 镰刀走它自己的 {@code use()}，
+     * 这里直接跳过，否则会扔两次。</p>
+     */
+    @SubscribeEvent
+    public static void onRightClick(net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickItem event) {
+        if (event.getLevel().isClientSide()) {
+            return;
+        }
+        if (!(event.getEntity() instanceof ServerPlayer player)) {
+            return;
+        }
+        if (event.getHand() != net.minecraft.world.InteractionHand.MAIN_HAND) {
+            return;
+        }
+        ItemStack stack = player.getMainHandItem();
+        if (!isScythe(stack) || isMalumNative(stack) || !MalumCompat.loaded()) {
+            return;
+        }
+        resolveAbility();
+        if (!abilityResolved) {
+            return;
+        }
+        try {
+            // 两者在原版里互斥（Rebound 的 checkCompatibility 挡住了飞腾），
+            // 真同时命中时优先回旋 —— 右键投掷更符合直觉。
+            if (enchantLevel(stack, "rebound") > 0) {
+                REBOUND_THROW.invoke(null, player.level(), player, event.getHand(), stack);
+                event.setCanceled(true);
+                event.setCancellationResult(net.minecraft.world.InteractionResult.SUCCESS);
+                return;
+            }
+            if (enchantLevel(stack, "ascension") > 0) {
+                ASCENSION_TRIGGER.invoke(null, player.level(), player, event.getHand(), stack);
+                event.setCanceled(true);
+                event.setCancellationResult(net.minecraft.world.InteractionResult.SUCCESS);
+            }
+        } catch (Throwable ignored) {
+            // 对方模组改了签名就安静跳过 —— 附魔本身还在
+        }
+    }
+
     /**
      * **不祥镰刀：抢夺 / 时运 与 精准采集 冲突。**
      *
