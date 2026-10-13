@@ -37,7 +37,7 @@ public class PossessAppearanceMessage {
     public void handle(Supplier<NetworkEvent.Context> supplier) {
         NetworkEvent.Context context = supplier.get();
         context.enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT,
-                () -> () -> com.habaiwa.goetyrevenant.client.PossessedAppearance.set(
+                () -> () -> com.habaiwa.goetyrevenant.client.state.PossessedAppearance.set(
                         this.player, this.entityTypeId, this.data)));
         context.setPacketHandled(true);
     }

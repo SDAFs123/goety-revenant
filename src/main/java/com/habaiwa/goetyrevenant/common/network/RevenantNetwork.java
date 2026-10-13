@@ -176,7 +176,7 @@ public final class RevenantNetwork {
         float bearing = Float.NaN;
         if (soul) {
             com.habaiwa.goetyrevenant.common.entity.CorpseEntity corpse =
-                    com.habaiwa.goetyrevenant.common.soul.Possession.findCorpse(player);
+                    com.habaiwa.goetyrevenant.common.possession.Possession.findCorpse(player);
             if (corpse != null) {
                 distance = com.habaiwa.goetyrevenant.common.soul.Guidance.distance(player, corpse);
                 // 不同维度就没有「方向」可言，发 NaN 让客户端画成「另一个世界」

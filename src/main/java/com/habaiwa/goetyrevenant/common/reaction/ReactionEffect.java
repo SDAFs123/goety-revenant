@@ -49,11 +49,11 @@ public final class ReactionEffect {
         float mult = (rule.multiplier() <= 0.0F ? 1.0F : rule.multiplier())
                 * com.habaiwa.goetyrevenant.common.soul.SoulTemperature.powerScale(player)
                 // 强化「灼魂」：连携伤害
-                * com.habaiwa.goetyrevenant.common.body.UpgradeSlots.comboDamageFactor(player);
+                * com.habaiwa.goetyrevenant.common.embed.UpgradeSlots.comboDamageFactor(player);
         // 强化「共鸣」：同元素反应（组合里全是一个元素）额外加成
         boolean sameElement = rule.combo().stream().distinct().count() <= 1;
         if (sameElement) {
-            mult *= com.habaiwa.goetyrevenant.common.body.UpgradeSlots.resonanceFactor(player);
+            mult *= com.habaiwa.goetyrevenant.common.embed.UpgradeSlots.resonanceFactor(player);
         }
         int layers = rule.size();
 
@@ -161,7 +161,7 @@ public final class ReactionEffect {
             }
             magic(level, player, other, amount, true);
             // 强化「链雷」：每 2 槽多串 1 个
-            if (++hits >= Math.min(3, layers) + com.habaiwa.goetyrevenant.common.body.UpgradeSlots.chainExtra(player)) {
+            if (++hits >= Math.min(3, layers) + com.habaiwa.goetyrevenant.common.embed.UpgradeSlots.chainExtra(player)) {
                 break;
             }
         }

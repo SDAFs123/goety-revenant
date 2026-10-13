@@ -1,6 +1,6 @@
 package com.habaiwa.goetyrevenant.client.overlay;
 
-import com.habaiwa.goetyrevenant.client.ClientSoulState;
+import com.habaiwa.goetyrevenant.client.state.ClientSoulState;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;

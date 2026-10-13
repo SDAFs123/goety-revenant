@@ -1,7 +1,7 @@
 package com.habaiwa.goetyrevenant.init;
 
 import com.habaiwa.goetyrevenant.GoetyRevenant;
-import com.habaiwa.goetyrevenant.common.body.OrganType;
+import com.habaiwa.goetyrevenant.common.embed.OrganType;
 import com.habaiwa.goetyrevenant.common.effect.ElementOverloadEffect;
 import java.util.EnumMap;
 import java.util.Map;

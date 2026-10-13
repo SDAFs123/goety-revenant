@@ -66,7 +66,7 @@ public class ShenShiSyncMessage {
     public void handle(Supplier<NetworkEvent.Context> supplier) {
         NetworkEvent.Context context = supplier.get();
         context.enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT,
-                () -> () -> com.habaiwa.goetyrevenant.client.ClientShenShi.accept(
+                () -> () -> com.habaiwa.goetyrevenant.client.state.ClientShenShi.accept(
                         this.contacts, this.pulse, this.radius)));
         context.setPacketHandled(true);
     }

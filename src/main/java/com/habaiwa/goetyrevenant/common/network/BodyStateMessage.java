@@ -1,7 +1,7 @@
 package com.habaiwa.goetyrevenant.common.network;
 
-import com.habaiwa.goetyrevenant.common.body.BodyModData;
-import com.habaiwa.goetyrevenant.common.body.OrganType;
+import com.habaiwa.goetyrevenant.common.embed.BodyModData;
+import com.habaiwa.goetyrevenant.common.embed.OrganType;
 import com.Polarice3.Goety.api.items.magic.IFocus;
 import java.util.ArrayList;
 import java.util.List;
@@ -99,7 +99,7 @@ public class BodyStateMessage {
             boolean opened = BodyModData.isOpened(player, organs[i]);
             entries[i] = new Entry(organs[i].getId(), opened,
                     BodyModData.isSlotLocked(player, organs[i]), has, has ? focus : ItemStack.EMPTY,
-                    com.habaiwa.goetyrevenant.common.body.Embedding.costFor(opened));
+                    com.habaiwa.goetyrevenant.common.embed.Embedding.costFor(opened));
         }
 
         List<FocusEntry> available = new ArrayList<>();
@@ -136,8 +136,8 @@ public class BodyStateMessage {
                 com.habaiwa.goetyrevenant.common.soul.SoulEnergy.max(player),
                 com.habaiwa.goetyrevenant.common.soul.SoulTemperature.get(player),
                 takeNewStage(player),
-                com.habaiwa.goetyrevenant.common.body.UpgradeSlots.snapshot(player),
-                com.habaiwa.goetyrevenant.common.body.UpgradeSlots.cooldown(player),
+                com.habaiwa.goetyrevenant.common.embed.UpgradeSlots.snapshot(player),
+                com.habaiwa.goetyrevenant.common.embed.UpgradeSlots.cooldown(player),
                 com.habaiwa.goetyrevenant.common.tree.SoulTree.stage(player),
                 seqOrdinal(player),
                 fleshLineOrdinal(player),
@@ -243,7 +243,7 @@ public class BodyStateMessage {
     public void handle(Supplier<NetworkEvent.Context> supplier) {
         NetworkEvent.Context context = supplier.get();
         context.enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT,
-                () -> () -> com.habaiwa.goetyrevenant.client.BodyClientState.accept(this)));
+                () -> () -> com.habaiwa.goetyrevenant.client.state.BodyClientState.accept(this)));
         context.setPacketHandled(true);
     }
 

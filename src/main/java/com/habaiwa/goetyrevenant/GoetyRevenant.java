@@ -50,7 +50,7 @@ public class GoetyRevenant {
         MinecraftForge.EVENT_BUS.register(com.habaiwa.goetyrevenant.common.command.DebugCommands.class);
         // 连携（元素反应）的触发点
         MinecraftForge.EVENT_BUS.register(com.habaiwa.goetyrevenant.common.reaction.ReactionEvents.class);
-        com.habaiwa.goetyrevenant.common.body.FocusPassives.registerDefaults();
+        com.habaiwa.goetyrevenant.common.embed.FocusPassives.registerDefaults();
         // 血肉仪式：我们自己的仪式种类（挂在本体的仪式系统上）
         com.habaiwa.goetyrevenant.common.ritual.FleshRitual.register();
 
@@ -63,11 +63,11 @@ public class GoetyRevenant {
         MinecraftForge.EVENT_BUS.register(com.habaiwa.goetyrevenant.common.compat.MalumHarvestCompat.class);
         MinecraftForge.EVENT_BUS.register(com.habaiwa.goetyrevenant.common.soul.SoulPerception.class);
         // 元素超载的结算（喝魔药之后那一段）
-        MinecraftForge.EVENT_BUS.register(com.habaiwa.goetyrevenant.common.body.ElementOverload.class);
+        MinecraftForge.EVENT_BUS.register(com.habaiwa.goetyrevenant.common.element.ElementOverload.class);
         // 灵魂溃散（灵魂能量被抽干之后的代价）
         MinecraftForge.EVENT_BUS.register(com.habaiwa.goetyrevenant.common.soul.SoulCollapse.class);
         // 神识 —— 修仙者那种感知，不用看也知道周围什么情况
-        MinecraftForge.EVENT_BUS.register(com.habaiwa.goetyrevenant.common.body.ShenShi.class);
+        MinecraftForge.EVENT_BUS.register(com.habaiwa.goetyrevenant.common.shenshi.ShenShi.class);
         // 所有聚晶的 tooltip（被动 + 归属窍）
         // 注意：这个类【没有】类级注解，必须在这里手动注册 —— 别再加注解，那会注册两次。
         MinecraftForge.EVENT_BUS.register(com.habaiwa.goetyrevenant.common.tooltip.FocusTooltip.class);

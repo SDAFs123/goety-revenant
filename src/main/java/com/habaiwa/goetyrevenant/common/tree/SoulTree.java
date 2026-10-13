@@ -1,7 +1,7 @@
 package com.habaiwa.goetyrevenant.common.tree;
 
-import com.habaiwa.goetyrevenant.common.body.BodyModData;
-import com.habaiwa.goetyrevenant.common.body.OrganType;
+import com.habaiwa.goetyrevenant.common.embed.BodyModData;
+import com.habaiwa.goetyrevenant.common.embed.OrganType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 

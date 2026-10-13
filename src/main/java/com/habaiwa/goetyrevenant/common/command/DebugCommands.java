@@ -1,7 +1,7 @@
 package com.habaiwa.goetyrevenant.common.command;
 
-import com.habaiwa.goetyrevenant.common.body.BodyModData;
-import com.habaiwa.goetyrevenant.common.body.OrganType;
+import com.habaiwa.goetyrevenant.common.embed.BodyModData;
+import com.habaiwa.goetyrevenant.common.embed.OrganType;
 import com.habaiwa.goetyrevenant.common.network.RevenantNetwork;
 import com.habaiwa.goetyrevenant.common.soul.SoulCollapse;
 import com.habaiwa.goetyrevenant.common.soul.SoulData;
@@ -241,7 +241,7 @@ public final class DebugCommands {
         p.displayClientMessage(Component.literal("=== 七窍 / 状态 ===").withStyle(ChatFormatting.RED), false);
         p.displayClientMessage(Component.literal("资格: " + BodyModData.isUnlocked(p)
                 + "  灵魂: " + SoulData.isSoul(p)
-                + "  神识: " + com.habaiwa.goetyrevenant.common.body.ShenShi.isActive(p)), false);
+                + "  神识: " + com.habaiwa.goetyrevenant.common.shenshi.ShenShi.isActive(p)), false);
         p.displayClientMessage(Component.literal("灵魂能量: " + SoulEnergy.current(p) + " / " + SoulEnergy.max(p)), false);
         p.displayClientMessage(Component.literal("契合度: " + Math.round(SoulData.getSelfAttunement(p) * 100) + "%"
                 + "  灵魂温度: " + com.habaiwa.goetyrevenant.common.soul.SoulTemperature.get(p)
@@ -294,7 +294,7 @@ public final class DebugCommands {
 
     private static int shenshi(CommandContext<CommandSourceStack> ctx, boolean on) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
         ServerPlayer p = ctx.getSource().getPlayerOrException();
-        com.habaiwa.goetyrevenant.common.body.ShenShi.force(p, on);
+        com.habaiwa.goetyrevenant.common.shenshi.ShenShi.force(p, on);
         p.displayClientMessage(Component.literal("神识 -> " + (on ? "开" : "关")).withStyle(ChatFormatting.LIGHT_PURPLE), false);
         return 0;
     }

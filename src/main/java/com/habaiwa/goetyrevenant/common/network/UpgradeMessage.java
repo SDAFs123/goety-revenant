@@ -1,7 +1,7 @@
 package com.habaiwa.goetyrevenant.common.network;
 
-import com.habaiwa.goetyrevenant.common.body.UpgradeSlots;
-import com.habaiwa.goetyrevenant.common.body.UpgradeType;
+import com.habaiwa.goetyrevenant.common.embed.UpgradeSlots;
+import com.habaiwa.goetyrevenant.common.embed.UpgradeType;
 import java.util.function.Supplier;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;

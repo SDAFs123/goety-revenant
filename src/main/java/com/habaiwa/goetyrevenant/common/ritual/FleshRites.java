@@ -1,8 +1,8 @@
 package com.habaiwa.goetyrevenant.common.ritual;
 
-import com.habaiwa.goetyrevenant.common.body.BodyModData;
-import com.habaiwa.goetyrevenant.common.body.Embedding;
-import com.habaiwa.goetyrevenant.common.body.OrganType;
+import com.habaiwa.goetyrevenant.common.embed.BodyModData;
+import com.habaiwa.goetyrevenant.common.embed.Embedding;
+import com.habaiwa.goetyrevenant.common.embed.OrganType;
 import com.habaiwa.goetyrevenant.common.network.RevenantNetwork;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;

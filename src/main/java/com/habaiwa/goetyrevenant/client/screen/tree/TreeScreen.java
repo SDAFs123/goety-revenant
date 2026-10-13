@@ -1,11 +1,11 @@
 package com.habaiwa.goetyrevenant.client.screen.tree;
 
-import com.habaiwa.goetyrevenant.client.screen.SoulBackdrop;
+import com.habaiwa.goetyrevenant.client.screen.backdrop.SoulBackdrop;
 
 import com.habaiwa.goetyrevenant.client.tree.TreeLayout;
 
-import com.habaiwa.goetyrevenant.client.BodyClientState;
-import com.habaiwa.goetyrevenant.common.body.UpgradeType;
+import com.habaiwa.goetyrevenant.client.state.BodyClientState;
+import com.habaiwa.goetyrevenant.common.embed.UpgradeType;
 import com.habaiwa.goetyrevenant.common.network.BodyActionMessage;
 import com.habaiwa.goetyrevenant.common.network.BodyStateMessage;
 import com.habaiwa.goetyrevenant.common.network.RevenantNetwork;
@@ -227,7 +227,7 @@ public class TreeScreen extends Screen {
             }
         }
         this.clampView();
-        if (this.hoveredLeaf >= 0 && com.habaiwa.goetyrevenant.client.BodyKeybinds.UPGRADE_CYCLE
+        if (this.hoveredLeaf >= 0 && com.habaiwa.goetyrevenant.client.input.BodyKeybinds.UPGRADE_CYCLE
                 .matches(keyCode, scanCode)) {
             int[] chosen = BodyClientState.upgrades();
             int cur = this.hoveredLeaf < chosen.length ? chosen[this.hoveredLeaf] : 0;
@@ -740,7 +740,7 @@ public class TreeScreen extends Screen {
     }
 
     private ItemStack focusAt(BodyStateMessage state, int index) {
-        com.habaiwa.goetyrevenant.common.body.OrganType organ = SoulTree.organAt(index);
+        com.habaiwa.goetyrevenant.common.embed.OrganType organ = SoulTree.organAt(index);
         if (state == null || organ == null) {
             return ItemStack.EMPTY;
         }
@@ -773,10 +773,10 @@ public class TreeScreen extends Screen {
         if (choice == 0) {
             lines.add(Component.literal("枯叶 —— 点它选一个方向").withStyle(ChatFormatting.AQUA));
         } else {
-            com.habaiwa.goetyrevenant.common.body.UpgradeType.Type[] group =
-                    com.habaiwa.goetyrevenant.common.body.UpgradeSlots.candidates(index);
+            com.habaiwa.goetyrevenant.common.embed.UpgradeType.Type[] group =
+                    com.habaiwa.goetyrevenant.common.embed.UpgradeSlots.candidates(index);
             if (choice <= group.length) {
-                com.habaiwa.goetyrevenant.common.body.UpgradeType.Type type = group[choice - 1];
+                com.habaiwa.goetyrevenant.common.embed.UpgradeType.Type type = group[choice - 1];
                 lines.add(Component.literal(type.group().cn() + "族 · " + type.cn())
                         .withStyle(ChatFormatting.AQUA));
                 lines.add(Component.literal(type.gain()).withStyle(ChatFormatting.GRAY));

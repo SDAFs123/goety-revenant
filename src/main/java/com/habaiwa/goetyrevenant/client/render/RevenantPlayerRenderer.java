@@ -1,6 +1,6 @@
 package com.habaiwa.goetyrevenant.client.render;
 
-import com.habaiwa.goetyrevenant.client.ClientSkinOverride;
+import com.habaiwa.goetyrevenant.client.state.ClientSkinOverride;
 import com.mojang.authlib.GameProfile;
 import java.util.UUID;
 import net.minecraft.client.Minecraft;
@@ -60,7 +60,7 @@ public class RevenantPlayerRenderer extends PlayerRenderer {
         }
         // ① 附身了生物 → 要画成那个生物（这条需要接管，没有别的办法）
         ResourceLocation possessed =
-                com.habaiwa.goetyrevenant.client.PossessedAppearance.get(player.getUUID());
+                com.habaiwa.goetyrevenant.client.state.PossessedAppearance.get(player.getUUID());
         if (possessed != null) {
             return true;
         }
@@ -111,7 +111,7 @@ public class RevenantPlayerRenderer extends PlayerRenderer {
                        com.mojang.blaze3d.vertex.PoseStack poseStack,
                        net.minecraft.client.renderer.MultiBufferSource buffer, int packedLight) {
         net.minecraft.resources.ResourceLocation id =
-                com.habaiwa.goetyrevenant.client.PossessedAppearance.get(entity.getUUID());
+                com.habaiwa.goetyrevenant.client.state.PossessedAppearance.get(entity.getUUID());
         if (id != null && !entity.isInvisible() && entity.level() != null) {
             // **代理走缓存** —— 不再每帧新建实体、重读变体 NBT、重搬整套装备。
             // 那些成本随"屏幕上可见的附身玩家数 × 帧率"增长，而且破坏实体内部状态的连续性。

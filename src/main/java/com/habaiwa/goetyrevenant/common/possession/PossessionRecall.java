@@ -1,7 +1,7 @@
 package com.habaiwa.goetyrevenant.common.possession;
 
 import com.Polarice3.Goety.common.capabilities.soulenergy.ISoulEnergy;
-import com.habaiwa.goetyrevenant.common.soul.Possession;
+import com.habaiwa.goetyrevenant.common.possession.Possession;
 import javax.annotation.Nullable;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;

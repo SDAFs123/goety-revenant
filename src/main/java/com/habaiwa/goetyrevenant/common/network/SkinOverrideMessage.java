@@ -38,7 +38,7 @@ public class SkinOverrideMessage {
     public void handle(Supplier<NetworkEvent.Context> supplier) {
         NetworkEvent.Context context = supplier.get();
         context.enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT,
-                () -> () -> com.habaiwa.goetyrevenant.client.ClientSkinOverride.set(
+                () -> () -> com.habaiwa.goetyrevenant.client.state.ClientSkinOverride.set(
                         this.player, this.value, this.signature)));
         context.setPacketHandled(true);
     }

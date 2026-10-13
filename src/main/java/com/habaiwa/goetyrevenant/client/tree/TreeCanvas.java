@@ -239,7 +239,7 @@ public abstract class TreeCanvas {
     /** 叶簇数量。 */
     protected static final int[] CLUSTERS = {2, 6, 11, 16};
     protected static final int MAX_UPGRADE_LEAF =
-            com.habaiwa.goetyrevenant.common.body.UpgradeSlots.COUNT;
+            com.habaiwa.goetyrevenant.common.embed.UpgradeSlots.COUNT;
     protected static final float LENGTH_RATIO = 0.74F;
     protected static final int[] KIDS = {0, 3, 3, 2, 2};
     /** 分叉点的高度比（树高的多少）。 */
@@ -369,7 +369,7 @@ public abstract class TreeCanvas {
     protected final java.util.List<int[]> slots = new java.util.ArrayList<>(8);
     /** 强化叶：{x, y, r} —— 前几个是嵌入位旁的年轮叶，之后是树冠里的叶片。 */
     protected final java.util.List<int[]> leaves = new java.util.ArrayList<>(
-            com.habaiwa.goetyrevenant.common.body.UpgradeSlots.COUNT + 8);
+            com.habaiwa.goetyrevenant.common.embed.UpgradeSlots.COUNT + 8);
     /** 三条路各自七阶 —— 阶数由血肉线那边定义，这里只引用。 */
     protected static final int STAGES_PER_WAY =
             com.habaiwa.goetyrevenant.common.flesh.FleshLine.STAGES;

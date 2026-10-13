@@ -1,8 +1,8 @@
 package com.habaiwa.goetyrevenant.client.overlay;
 
-import com.habaiwa.goetyrevenant.client.BodyClientState;
-import com.habaiwa.goetyrevenant.client.ClientShenShi;
-import com.habaiwa.goetyrevenant.common.body.OrganType;
+import com.habaiwa.goetyrevenant.client.state.BodyClientState;
+import com.habaiwa.goetyrevenant.client.state.ClientShenShi;
+import com.habaiwa.goetyrevenant.common.embed.OrganType;
 import com.habaiwa.goetyrevenant.common.network.BodyStateMessage;
 import com.habaiwa.goetyrevenant.common.network.ShenShiSyncMessage;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -68,7 +68,7 @@ public class ShenShiOverlay implements IGuiOverlay {
         // 血角 / 血点 / 预警这些「感知层」只在**灵体状态**或**神识开启**时显示。
         // 活人的灵魂能量本来就是 0（没方舟、没图腾）—— 拿 0/上限 去比，
         // 等于天天给活人扣一顶「枯竭」的帽子（跳进哭泣之井解锁后尤其明显）。
-        boolean soulOrSense = com.habaiwa.goetyrevenant.client.ClientSoulState.isSoul()
+        boolean soulOrSense = com.habaiwa.goetyrevenant.client.state.ClientSoulState.isSoul()
                 || ClientShenShi.active();
         if (!soulOrSense) {
             return;
@@ -257,7 +257,7 @@ public class ShenShiOverlay implements IGuiOverlay {
         // 而且必须有真实的上限数据（原来 Math.max(1, 0) 会把"没有数据"当成"满格"，
         // 于是活人 0/1 = 0 直接触发误报）。
         int max = state.energyMax();
-        if ((ClientShenShi.active() || com.habaiwa.goetyrevenant.client.ClientSoulState.isSoul())
+        if ((ClientShenShi.active() || com.habaiwa.goetyrevenant.client.state.ClientSoulState.isSoul())
                 && max > 0
                 && state.soulEnergy() / (float) max < LOW_ENERGY_WARN) {
             graphics.drawCenteredString(Minecraft.getInstance().font,

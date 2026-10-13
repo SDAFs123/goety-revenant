@@ -1,6 +1,6 @@
 package com.habaiwa.goetyrevenant.common.compat;
 
-import com.habaiwa.goetyrevenant.common.body.BodyModData;
+import com.habaiwa.goetyrevenant.common.embed.BodyModData;
 import com.habaiwa.goetyrevenant.common.network.RevenantNetwork;
 import java.util.ArrayList;
 import java.util.List;

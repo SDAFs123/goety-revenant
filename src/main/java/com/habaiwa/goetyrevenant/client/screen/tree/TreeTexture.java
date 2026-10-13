@@ -4,7 +4,7 @@ import com.habaiwa.goetyrevenant.client.tree.SeedPainter;
 
 import com.habaiwa.goetyrevenant.client.tree.TreeLayout;
 
-import com.habaiwa.goetyrevenant.common.body.UpgradeSlots;
+import com.habaiwa.goetyrevenant.common.embed.UpgradeSlots;
 import com.mojang.blaze3d.platform.NativeImage;
 import java.util.ArrayList;
 import java.util.List;

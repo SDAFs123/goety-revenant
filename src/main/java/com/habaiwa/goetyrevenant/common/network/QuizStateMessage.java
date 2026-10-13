@@ -36,7 +36,7 @@ public class QuizStateMessage {
     public void handle(Supplier<NetworkEvent.Context> supplier) {
         NetworkEvent.Context context = supplier.get();
         context.enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT,
-                () -> () -> com.habaiwa.goetyrevenant.client.QuizClientState.accept(
+                () -> () -> com.habaiwa.goetyrevenant.client.state.QuizClientState.accept(
                         this.index, this.running, this.sequence)));
         context.setPacketHandled(true);
     }

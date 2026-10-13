@@ -106,7 +106,7 @@ public final class SoulEnergy {
             bonus = totemCapacity(player);
         }
         // 强化槽里的「魂涌 / 噬灵 / 链雷」都在改这个上限
-        return Math.max(1, (int) ((base + bonus) * com.habaiwa.goetyrevenant.common.body.UpgradeSlots.soulMaxFactor(player)));
+        return Math.max(1, (int) ((base + bonus) * com.habaiwa.goetyrevenant.common.embed.UpgradeSlots.soulMaxFactor(player)));
     }
 
     /**

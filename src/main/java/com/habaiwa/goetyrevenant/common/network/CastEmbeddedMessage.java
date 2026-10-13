@@ -1,7 +1,7 @@
 package com.habaiwa.goetyrevenant.common.network;
 
-import com.habaiwa.goetyrevenant.common.body.EmbeddedCasting;
-import com.habaiwa.goetyrevenant.common.body.OrganType;
+import com.habaiwa.goetyrevenant.common.embed.EmbeddedCasting;
+import com.habaiwa.goetyrevenant.common.embed.OrganType;
 import java.util.function.Supplier;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;

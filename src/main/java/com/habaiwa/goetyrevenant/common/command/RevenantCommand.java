@@ -1,8 +1,8 @@
 package com.habaiwa.goetyrevenant.common.command;
 
-import com.habaiwa.goetyrevenant.common.body.BodyModData;
-import com.habaiwa.goetyrevenant.common.body.Embedding;
-import com.habaiwa.goetyrevenant.common.body.OrganType;
+import com.habaiwa.goetyrevenant.common.embed.BodyModData;
+import com.habaiwa.goetyrevenant.common.embed.Embedding;
+import com.habaiwa.goetyrevenant.common.embed.OrganType;
 import com.habaiwa.goetyrevenant.common.network.RevenantNetwork;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;

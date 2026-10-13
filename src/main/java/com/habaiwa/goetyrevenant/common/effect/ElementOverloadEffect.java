@@ -1,6 +1,6 @@
 package com.habaiwa.goetyrevenant.common.effect;
 
-import com.habaiwa.goetyrevenant.common.body.OrganType;
+import com.habaiwa.goetyrevenant.common.embed.OrganType;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
 
@@ -8,7 +8,7 @@ import net.minecraft.world.effect.MobEffectCategory;
  * **元素超载** —— 喝下开窍魔药之后的副作用，一个**纯标记**效果。
  *
  * <p>它自己不做任何 tick 逻辑：真正的结算在
- * {@link com.habaiwa.goetyrevenant.common.body.ElementOverload} 里走 `PlayerTickEvent`。</p>
+ * {@link com.habaiwa.goetyrevenant.common.element.ElementOverload} 里走 `PlayerTickEvent`。</p>
  *
  * <p><b>为什么不写在 `applyEffectTick` 里</b>：那个回调是在
  * `LivingEntity#tickEffects` **遍历 activeEffects 的途中**调用的，

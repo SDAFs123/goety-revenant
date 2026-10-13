@@ -1,6 +1,6 @@
 package com.habaiwa.goetyrevenant.client.screen.tree;
 
-import com.habaiwa.goetyrevenant.client.BodyClientState;
+import com.habaiwa.goetyrevenant.client.state.BodyClientState;
 import com.habaiwa.goetyrevenant.common.network.BodyActionMessage;
 import com.habaiwa.goetyrevenant.common.network.BodyStateMessage;
 import com.habaiwa.goetyrevenant.common.network.RevenantNetwork;
@@ -136,9 +136,9 @@ public class FocusPickerScreen extends Screen {
                     // 发嵌入请求，然后回树界面看槽里的聚晶
                     RevenantNetwork.CHANNEL.sendToServer(new BodyActionMessage(
                             BodyActionMessage.EMBED,
-                            com.habaiwa.goetyrevenant.common.body.OrganType
+                            com.habaiwa.goetyrevenant.common.embed.OrganType
                                     .values()[Math.min(this.slotIndex,
-                                            com.habaiwa.goetyrevenant.common.body.OrganType.values().length - 1)]
+                                            com.habaiwa.goetyrevenant.common.embed.OrganType.values().length - 1)]
                                     .getId(),
                             this.focuses.get(i).slot()));
                     Minecraft.getInstance().setScreen(new TreeScreen());

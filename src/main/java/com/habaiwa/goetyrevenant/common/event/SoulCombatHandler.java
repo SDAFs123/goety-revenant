@@ -5,7 +5,7 @@ import com.Polarice3.Goety.api.items.magic.IWand;
 import com.Polarice3.Goety.utils.SEHelper;
 import com.habaiwa.goetyrevenant.GoetyRevenant;
 import com.habaiwa.goetyrevenant.common.entity.CorpseEntity;
-import com.habaiwa.goetyrevenant.common.soul.Possession;
+import com.habaiwa.goetyrevenant.common.possession.Possession;
 import com.habaiwa.goetyrevenant.common.soul.SoulConstants;
 import com.habaiwa.goetyrevenant.common.soul.SoulData;
 import net.minecraft.network.chat.Component;

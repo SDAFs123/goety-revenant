@@ -39,7 +39,7 @@ public class ConverterSyncMessage {
     public void handle(Supplier<NetworkEvent.Context> supplier) {
         NetworkEvent.Context context = supplier.get();
         context.enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT,
-                () -> () -> com.habaiwa.goetyrevenant.client.screen.SpiritConverterScreen.open(
+                () -> () -> com.habaiwa.goetyrevenant.client.screen.block.SpiritConverterScreen.open(
                         this.pos, this.mask, this.cageSouls, this.progress)));
         context.setPacketHandled(true);
     }

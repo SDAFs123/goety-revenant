@@ -5,7 +5,7 @@ import com.Polarice3.Goety.api.items.magic.IWand;
 import com.Polarice3.Goety.utils.SEHelper;
 import com.habaiwa.goetyrevenant.GoetyRevenant;
 import com.habaiwa.goetyrevenant.common.entity.CorpseEntity;
-import com.habaiwa.goetyrevenant.common.soul.Possession;
+import com.habaiwa.goetyrevenant.common.possession.Possession;
 import com.habaiwa.goetyrevenant.common.soul.SoulConstants;
 import com.habaiwa.goetyrevenant.common.soul.SoulData;
 import net.minecraft.network.chat.Component;
@@ -49,7 +49,7 @@ public final class RevenantEvents {
      */
     @SubscribeEvent
     public static void onServerStarted(net.minecraftforge.event.server.ServerStartedEvent event) {
-        com.habaiwa.goetyrevenant.common.soul.PossessProfile.load(event.getServer());
+        com.habaiwa.goetyrevenant.common.possession.PossessProfile.load(event.getServer());
         // 元素反应表（71 条，数据驱动）
         com.habaiwa.goetyrevenant.common.reaction.ElementReaction.load(event.getServer());
     }
@@ -87,7 +87,7 @@ public final class RevenantEvents {
                 com.habaiwa.goetyrevenant.common.network.RevenantNetwork.sendSkin(player, value, signature);
             }
         }
-        com.habaiwa.goetyrevenant.common.body.Embedding.applyAll(player);
+        com.habaiwa.goetyrevenant.common.embed.Embedding.applyAll(player);
         // 补发一次改造状态：启示录光环的 tooltip 要读「开了几个窍」之类的数据
         com.habaiwa.goetyrevenant.common.network.RevenantNetwork.sendBodyState(player);
     }

@@ -5,7 +5,7 @@ import com.Polarice3.Goety.api.items.magic.IWand;
 import com.Polarice3.Goety.utils.SEHelper;
 import com.habaiwa.goetyrevenant.GoetyRevenant;
 import com.habaiwa.goetyrevenant.common.entity.CorpseEntity;
-import com.habaiwa.goetyrevenant.common.soul.Possession;
+import com.habaiwa.goetyrevenant.common.possession.Possession;
 import com.habaiwa.goetyrevenant.common.soul.SoulConstants;
 import com.habaiwa.goetyrevenant.common.soul.SoulData;
 import net.minecraft.network.chat.Component;
@@ -49,7 +49,7 @@ public final class SoulTickHandler {
                 && event.player instanceof net.minecraft.server.level.ServerPlayer tempPlayer) {
             com.habaiwa.goetyrevenant.common.soul.SoulTemperature.tick(tempPlayer);
             // 强化槽的切换冷却
-            com.habaiwa.goetyrevenant.common.body.UpgradeSlots.tick(tempPlayer);
+            com.habaiwa.goetyrevenant.common.embed.UpgradeSlots.tick(tempPlayer);
             // 火种三态：体内保持满、环绕/离体时烛火值下降、归零自动回体
             com.habaiwa.goetyrevenant.common.sequence.EmberState.tick(tempPlayer);
             // 答题空间：别让人从白地里飘出去
@@ -88,17 +88,17 @@ public final class SoulTickHandler {
         }
 
         // 嵌入式聚晶的冷却
-        com.habaiwa.goetyrevenant.common.body.EmbeddedCasting.tickCooldowns(player);
+        com.habaiwa.goetyrevenant.common.embed.EmbeddedCasting.tickCooldowns(player);
 
         // 附身能力：摔落免疫的生物（飞行类 / 蜘蛛 / 猫）落地不掉血
-        if (com.habaiwa.goetyrevenant.common.soul.PossessAbilities.has(player,
-                com.habaiwa.goetyrevenant.common.soul.PossessAbilities.BIT_FALL_IMMUNE)) {
+        if (com.habaiwa.goetyrevenant.common.possession.PossessAbilities.has(player,
+                com.habaiwa.goetyrevenant.common.possession.PossessAbilities.BIT_FALL_IMMUNE)) {
             player.fallDistance = 0.0F;
         }
 
         // 首次嵌入的仪式（在极速抽灵魂力 / 扣血，别被别的逻辑打断）
-        if (com.habaiwa.goetyrevenant.common.body.Embedding.isRunning(player)) {
-            com.habaiwa.goetyrevenant.common.body.Embedding.tick(player);
+        if (com.habaiwa.goetyrevenant.common.embed.Embedding.isRunning(player)) {
+            com.habaiwa.goetyrevenant.common.embed.Embedding.tick(player);
             return;
         }
 
@@ -129,7 +129,7 @@ public final class SoulTickHandler {
         }
 
         // 附身能力每 tick 维持：水生呼吸、火焰免疫、跳跃、飞行、**爬墙**（蜘蛛那种）
-        com.habaiwa.goetyrevenant.common.soul.PossessAbilities.tick(player);
+        com.habaiwa.goetyrevenant.common.possession.PossessAbilities.tick(player);
 
         if (SoulData.isPossessing(player)) {
             int left = SoulData.getPossessTicks(player) - 1;

@@ -30,7 +30,7 @@ public class SoulOutMessage {
             if (player == null) {
                 return;
             }
-            if (!com.habaiwa.goetyrevenant.common.body.BodyModData.isUnlocked(player)) {
+            if (!com.habaiwa.goetyrevenant.common.embed.BodyModData.isUnlocked(player)) {
                 player.displayClientMessage(Component.translatable("message.goety_revenant.body_locked"), true);
                 return;
             }

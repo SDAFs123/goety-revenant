@@ -39,12 +39,12 @@ public final class ReactionEvents {
                 com.habaiwa.goetyrevenant.common.soul.SoulTemperature.onCombat(victim);
             }
             // 强化槽：速的代价（打得轻）、攻的代价（更疼）、守的减伤
-            float upgradeMult = com.habaiwa.goetyrevenant.common.body.UpgradeSlots
+            float upgradeMult = com.habaiwa.goetyrevenant.common.embed.UpgradeSlots
                     .damageDealtFactor(player);
             if (target instanceof ServerPlayer victim) {
-                upgradeMult *= com.habaiwa.goetyrevenant.common.body.UpgradeSlots
+                upgradeMult *= com.habaiwa.goetyrevenant.common.embed.UpgradeSlots
                         .damageTakenFactor(victim)
-                        * com.habaiwa.goetyrevenant.common.body.UpgradeSlots
+                        * com.habaiwa.goetyrevenant.common.embed.UpgradeSlots
                         .damageReduceFactor(victim);
             }
             if (upgradeMult != 1.0F) {
@@ -72,7 +72,7 @@ public final class ReactionEvents {
         if (!(event.getSource().getEntity() instanceof ServerPlayer player)) {
             return;
         }
-        if (!com.habaiwa.goetyrevenant.common.body.UpgradeSlots.hasSoulEater(player)) {
+        if (!com.habaiwa.goetyrevenant.common.embed.UpgradeSlots.hasSoulEater(player)) {
             return;
         }
         var energy = com.Polarice3.Goety.utils.SEHelper.getCapability(player);

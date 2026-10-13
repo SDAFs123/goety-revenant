@@ -1,7 +1,7 @@
 package com.habaiwa.goetyrevenant.client.overlay;
 
 import com.habaiwa.goetyrevenant.GoetyRevenant;
-import com.habaiwa.goetyrevenant.client.QuizClientState;
+import com.habaiwa.goetyrevenant.client.state.QuizClientState;
 import com.habaiwa.goetyrevenant.common.sequence.Sequence;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;

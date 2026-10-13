@@ -1,7 +1,7 @@
 package com.habaiwa.goetyrevenant.client.screen.tree;
 
-import com.habaiwa.goetyrevenant.client.BodyClientState;
-import com.habaiwa.goetyrevenant.common.body.UpgradeType;
+import com.habaiwa.goetyrevenant.client.state.BodyClientState;
+import com.habaiwa.goetyrevenant.common.embed.UpgradeType;
 import com.habaiwa.goetyrevenant.common.network.RevenantNetwork;
 import com.habaiwa.goetyrevenant.common.network.UpgradeMessage;
 import java.util.ArrayList;
@@ -79,7 +79,7 @@ public class UpgradePickerScreen extends Screen {
 
         graphics.drawCenteredString(this.font,
                 Component.literal("枝 · 第 " + (this.slotIndex + 1) + " 个强化槽　（"
-                        + com.habaiwa.goetyrevenant.common.body.UpgradeType
+                        + com.habaiwa.goetyrevenant.common.embed.UpgradeType
                                 .groupOfSlot(this.slotIndex).cn() + "族）"),
                 this.width / 2, this.panelTop + 12, GOLD);
         graphics.drawCenteredString(this.font,
@@ -93,8 +93,8 @@ public class UpgradePickerScreen extends Screen {
         this.hovered = -1;
         int rowH = 30;
         int rowY = this.panelTop + 42;
-        com.habaiwa.goetyrevenant.common.body.UpgradeType.Type[] options =
-                com.habaiwa.goetyrevenant.common.body.UpgradeSlots.candidates(this.slotIndex);
+        com.habaiwa.goetyrevenant.common.embed.UpgradeType.Type[] options =
+                com.habaiwa.goetyrevenant.common.embed.UpgradeSlots.candidates(this.slotIndex);
         for (int i = 0; i < options.length; i++) {
             UpgradeType.Type type = options[i];
             boolean selected = current == i + 1;

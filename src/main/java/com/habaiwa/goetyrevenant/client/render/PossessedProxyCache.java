@@ -1,6 +1,6 @@
 package com.habaiwa.goetyrevenant.client.render;
 
-import com.habaiwa.goetyrevenant.client.PossessedAppearance;
+import com.habaiwa.goetyrevenant.client.state.PossessedAppearance;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;

@@ -5,7 +5,7 @@ import com.habaiwa.goetyrevenant.common.item.RevenantRobeItem;
 import com.habaiwa.goetyrevenant.common.item.CorpseStoreFocusItem;
 import com.habaiwa.goetyrevenant.common.item.SoulHarvestCharmItem;
 import com.habaiwa.goetyrevenant.common.item.SoulRecallFocusItem;
-import com.habaiwa.goetyrevenant.common.body.OrganType;
+import com.habaiwa.goetyrevenant.common.embed.OrganType;
 import com.habaiwa.goetyrevenant.common.item.RevenantStaffItem;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;

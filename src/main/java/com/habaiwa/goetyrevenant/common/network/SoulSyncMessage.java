@@ -67,7 +67,7 @@ public class SoulSyncMessage {
     public void handle(Supplier<NetworkEvent.Context> supplier) {
         NetworkEvent.Context context = supplier.get();
         context.enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT,
-                () -> () -> com.habaiwa.goetyrevenant.client.ClientSoulState.accept(
+                () -> () -> com.habaiwa.goetyrevenant.client.state.ClientSoulState.accept(
                         this.soul, this.attunement, this.energy, this.soulTicks, this.possessTicks,
                         this.bodyDistance, this.bodyBearing, this.energyMax, this.drifting)));
         context.setPacketHandled(true);

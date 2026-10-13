@@ -43,12 +43,12 @@ public class AnswerMessage {
             {
                 // **觉醒**：锁定序列 + 树睁开眼 + 烛火值从觉醒阶段起
                 Sequence.awaken(player, matched);
-                com.habaiwa.goetyrevenant.common.body.BodyModData.setUnlocked(player, true);
+                com.habaiwa.goetyrevenant.common.embed.BodyModData.setUnlocked(player, true);
                 // **觉醒即开窍** —— 开窍魔药那套已经取消，身体是那七问答改造的，
                 // 六窍直接全开。少了这一步，嵌入位永远是锁的（点了没反应）。
-                for (com.habaiwa.goetyrevenant.common.body.OrganType organ
-                        : com.habaiwa.goetyrevenant.common.body.OrganType.values()) {
-                    com.habaiwa.goetyrevenant.common.body.BodyModData.setOpened(player, organ, true);
+                for (com.habaiwa.goetyrevenant.common.embed.OrganType organ
+                        : com.habaiwa.goetyrevenant.common.embed.OrganType.values()) {
+                    com.habaiwa.goetyrevenant.common.embed.BodyModData.setOpened(player, organ, true);
                 }
                 com.habaiwa.goetyrevenant.common.sequence.CandleValue.setStage(player, 0);
                 com.habaiwa.goetyrevenant.common.sequence.CandleValue.holdAtMax(player);

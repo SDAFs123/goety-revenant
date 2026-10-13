@@ -1,7 +1,7 @@
 package com.habaiwa.goetyrevenant.common.compat;
 
 import com.habaiwa.goetyrevenant.GoetyRevenant;
-import com.habaiwa.goetyrevenant.common.soul.Attunement;
+import com.habaiwa.goetyrevenant.common.possession.Attunement;
 import net.minecraftforge.fml.ModList;
 import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;

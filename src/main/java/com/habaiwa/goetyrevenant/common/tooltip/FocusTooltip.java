@@ -1,8 +1,8 @@
 package com.habaiwa.goetyrevenant.common.tooltip;
 
 import com.Polarice3.Goety.api.items.magic.IFocus;
-import com.habaiwa.goetyrevenant.common.body.FocusPassive;
-import com.habaiwa.goetyrevenant.common.body.OrganType;
+import com.habaiwa.goetyrevenant.common.embed.FocusPassive;
+import com.habaiwa.goetyrevenant.common.embed.OrganType;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.ChatFormatting;

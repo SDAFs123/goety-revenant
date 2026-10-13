@@ -22,7 +22,7 @@ public class ShenShiMessage {
         context.enqueueWork(() -> {
             ServerPlayer player = context.getSender();
             if (player != null) {
-                com.habaiwa.goetyrevenant.common.body.ShenShi.toggle(player);
+                com.habaiwa.goetyrevenant.common.shenshi.ShenShi.toggle(player);
             }
         });
         context.setPacketHandled(true);

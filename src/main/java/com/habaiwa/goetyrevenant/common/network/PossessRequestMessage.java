@@ -1,6 +1,6 @@
 package com.habaiwa.goetyrevenant.common.network;
 
-import com.habaiwa.goetyrevenant.common.soul.Possession;
+import com.habaiwa.goetyrevenant.common.possession.Possession;
 import com.habaiwa.goetyrevenant.common.soul.SoulData;
 import java.util.function.Supplier;
 import net.minecraft.network.FriendlyByteBuf;
