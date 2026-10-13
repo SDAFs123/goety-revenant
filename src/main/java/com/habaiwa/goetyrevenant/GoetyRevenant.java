@@ -45,6 +45,8 @@ public class GoetyRevenant {
         RevenantNetwork.register();
         com.habaiwa.goetyrevenant.common.compat.RevenantCompat.init();
         com.habaiwa.goetyrevenant.common.compat.EnigmaticLegacyCompat.init();
+        // 标签自检：启动后把 #malum:scythe 等的真实内容打进日志（诊断镰刀附魔互通）
+        MinecraftForge.EVENT_BUS.register(com.habaiwa.goetyrevenant.common.compat.TagAudit.class);
         MinecraftForge.EVENT_BUS.register(com.habaiwa.goetyrevenant.common.compat.EnigmaticLegacyCompat.class);
         // 调试指令：/grdebug ...
         MinecraftForge.EVENT_BUS.register(com.habaiwa.goetyrevenant.common.command.DebugCommands.class);

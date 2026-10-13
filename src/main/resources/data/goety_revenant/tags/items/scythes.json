@@ -32,6 +32,10 @@
     {
       "id": "malum:soul_of_a_scythe",
       "required": false
+    },
+    {
+      "id": "malum:edge_of_deliverance",
+      "required": false
     }
   ]
 }
