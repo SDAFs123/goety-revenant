@@ -78,50 +78,17 @@ public final class TreeTexture extends com.habaiwa.goetyrevenant.client.tree.Tre
         this.tex = new ResourceLocation("goety_revenant", "dynamic/" + name);
     }
 
-    /** 树皮色阶（暗 → 亮）。 */
-    private static final int[] BARK = {
-            0xFF120E10, 0xFF1E1614, 0xFF2B1F1A, 0xFF392821, 0xFF473226,
-            0xFF553D2E, 0xFF634836, 0xFF71523E, 0xFF7F5C46};
     /** 叶色阶（暗 → 亮）。 */
     private static final int[] LEAF = {
             0xFF0C2A22, 0xFF10402F, 0xFF16543B, 0xFF1D6A49, 0xFF278059,
             0xFF34966B, 0xFF45AC80, 0xFF5CC197};
-    /** 木纹高光。 */
-    /**
-     * **受光面的颜色** —— 星光不是阳光，所以不是暖黄，是冷白偏青。
-     * 主光源在左上（就是星空里那颗最亮的星的方向）。
-     */
-    private static final int BARK_LIGHT = 0xFFA8C4D8;
 
-    // ==== 血肉层用到的色（按解剖学的真实层次取色，不是一支红刷到底）====
-    // ======================================================================
-    //  **血肉的色，全部按"地下无光"来取。**
-    //
-    //  我第一版画的是**手术台上的新鲜肉**：鲜红、油亮、高饱和。那是**有强光**的样子。
-    //  而这里是土壤底下 —— 没有光。真实的、无光环境里的血肉：
-    //
-    //      · 深暗的红褐，明度只有 15~30%（接近黑）
-    //      · 偏紫、偏褐（血氧化了、缺氧了）
-    //      · 饱和度低 —— 不是"红"，是"暗红里带褐"
-    //
-    //  **更关键的一条**：明度必须和土壤（约 0x4A3626，R≈74）落在同一个区间。
-    //  差一倍的两层摆在一起，永远像拼贴 —— 加多厚的过渡带都救不回来。
-    //  所以下面这些值的红通道全部压在 60~90 之间，和土一个量级。
-    // ======================================================================
-    /** 肌肉（"鲜"也只是暗红 —— 地下没有光）。R≈74，和土壤同级。 */
-    private static final int MEAT_FRESH = 0xFF4A1418;
-    /** 深一点的肌肉。 */
-    private static final int MEAT_DEEP = 0xFF361014;
-    /** 压实的组织。 */
-    private static final int MEAT_DARK = 0xFF240A0E;
     /** 缺氧的紫（淤血/深层）。 */
     private static final int MEAT_PURPLE = 0xFF2E141C;
     /** 脂肪：暗黄褐（不是亮黄白 —— 地下的脂肪也是暗的）。 */
     private static final int FAT = 0xFF6A5836;
     /** 筋膜：暗灰（不是亮灰白）。 */
     private static final int FASCIA = 0xFF544E4A;
-    /** **湿润高光**：压到暗红灰（地下的湿，只是"不干"，不是"反光"）。 */
-    private static final int WET = 0xFF7A4E52;
     private static final int SOIL_GRAIN_B = 0xFF2A1E14;
 
     /**
@@ -139,8 +106,6 @@ public final class TreeTexture extends com.habaiwa.goetyrevenant.client.tree.Tre
             0xFF9060D0,   // 神识：幽紫
     };
 
-    private static final float LIGHT_X = -0.62F;
-    private static final float LIGHT_Y = -0.78F;
 
     /** 四个阶段的参数（之间连续插值）。 */
     private static final float[] KEY = {0.0F, 1.0F / 3.0F, 2.0F / 3.0F, 1.0F};
@@ -177,7 +142,7 @@ public final class TreeTexture extends com.habaiwa.goetyrevenant.client.tree.Tre
      * 边缘就变成平滑过渡（等于免费的抗锯齿）。
      * 代价只是生成时多算几倍 —— 而这棵树一个会话只画一次。</p>
      */
-    private static final int SS_MAX = 2;
+
 
     /**
      * **实际使用的超采样倍数** —— 按内容图的面积自适应。
@@ -190,7 +155,7 @@ public final class TreeTexture extends com.habaiwa.goetyrevenant.client.tree.Tre
      * <p>所以：图小的时候照旧 2 倍（抗锯齿），图大的时候降到 1 倍 ——
      * 宁可边缘略糙，也不能让界面打不开。</p>
      */
-    private int ss = SS_MAX;
+    // ss / SS_MAX 在 TreeCanvas 里（protected）
 
     /** 算出这次该用几倍超采样。 */
     private void pickSupersample() {
@@ -209,7 +174,7 @@ public final class TreeTexture extends com.habaiwa.goetyrevenant.client.tree.Tre
     /** 觉醒的序列序号（-1 = 还没觉醒，用中性色）。 */
     private int seqIndex = -1;
     /** 实际使用的树皮 / 叶子色阶（按序列染过色的）。 */
-    private int[] bark = BARK;
+    // bark（树皮色阶）在 TreeCanvas 里（protected）
     private int[] leaf = LEAF;
     private long stamp = Long.MIN_VALUE;
     private float zoom = 1.0F;
@@ -222,10 +187,7 @@ public final class TreeTexture extends com.habaiwa.goetyrevenant.client.tree.Tre
      */
     private int[] slotColors = new int[6];
 
-    /** 嵌入位（主干上的年轮节）：{x, y}。 */
-    private final List<int[]> slots = new ArrayList<>(8);
-    /** 强化叶：{x, y, r} —— 前几个是嵌入位旁的年轮叶，之后是树冠里的叶片。 */
-    private final List<int[]> leaves = new ArrayList<>(MAX_UPGRADE_LEAF + 8);
+    // slots / leaves 在 TreeCanvas 里（protected）—— 绘制产物由那一层统一持有
 
     private int upgradeLeafCounter = 0;
 
@@ -305,11 +267,7 @@ public final class TreeTexture extends com.habaiwa.goetyrevenant.client.tree.Tre
      * 每条路上有七个节点（一阶一个）。玩家走的是哪条，那条就亮起来；
      * 另外两条一直暗着 —— 它们是<b>没走的路</b>，看得见，但不会亮。</p>
      */
-    private static final int STAGES_PER_WAY =
-            com.habaiwa.goetyrevenant.common.flesh.FleshLine.STAGES;
-    private final int[][][] wayNodes = new int[3][STAGES_PER_WAY][2];
-    /** 每条路有没有被走到（用来决定画不画它的细节）。 */
-    private final boolean[] wayAlive = new boolean[3];
+    // wayNodes / wayAlive / STAGES_PER_WAY 在 TreeCanvas 里（protected）
 
     public void ensure(int width, int height, int stage, int sequence, long stamp, float zoom) {
         // **zoom 不进缓存判断** —— 它只决定"看多近"，不该让内容重画一遍。
@@ -639,10 +597,6 @@ public final class TreeTexture extends com.habaiwa.goetyrevenant.client.tree.Tre
     /*  参数：四个阶段之间连续插值                                           */
     /* ------------------------------------------------------------------ */
 
-    /** 生长值 0~1（0 = 幼苗，1 = 巨树）。 */
-    private float grow() {
-        return Math.max(0.0F, Math.min(1.0F, this.stage / 7.0F));
-    }
 
     private float ramp(float[] keys) {
         float g = this.grow();
@@ -683,7 +637,7 @@ public final class TreeTexture extends com.habaiwa.goetyrevenant.client.tree.Tre
         // **树不随序列变样。**
         // 序列决定它**长到哪一步**（种子 / 幼苗 / 小树 / 成树 / 巨树），
         // 不决定它是什么颜色 —— 按序列染色是我自己加的戏，撤了。
-        this.bark = BARK;
+        // bark 的默认值在 TreeCanvas（BARK），这里不需要再赋一遍
         this.leaf = LEAF;
     }
 
@@ -746,7 +700,10 @@ public final class TreeTexture extends com.habaiwa.goetyrevenant.client.tree.Tre
             new SeedPainter(this, this.rng).seed(cx, groundY, trunkW);
             return;
         }
-        this.roots(cx, groundY, trunkW);
+        // 根系交给 RootPainter（主根 / 侧根 / 细根 / 三条路），
+        // 节点坐标它会写进画布的 wayNodes
+        new com.habaiwa.goetyrevenant.client.tree.RootPainter(this, this.soilTop, this.fleshTop)
+                .paint(cx, groundY, trunkW);
         this.mark("根");
         this.tree(cx, groundY, trunkH, trunkW);
         this.mark("树");
@@ -756,338 +713,13 @@ public final class TreeTexture extends com.habaiwa.goetyrevenant.client.tree.Tre
                 + "  |  " + this.inkReport());
     }
 
-    /* ---- ① 土壤 -------------------------------------------------------- */
-
-    /* ---- ② 树根 -------------------------------------------------------- */
-
-    /** 树根：从主干底部散开、扎进土里；长得越大，根越粗、越把土拱开。 */
-    /**
-     * **魂树的根** —— 从树基往下渗透，越深越不像木头，最后完全是血管；
-     * 半路上分成三条，就是血肉线的三条路。
-     *
-     * <h3>沿路的变化（这是"渗透"的实质）</h3>
-     * <pre>
-     *   土壤里（深 0.00~0.22）  木质：树皮的颜色，有受光面
-     *   土壤下缘（深 0.22~0.46）**树皮裂开**，里面透出肉 —— 半木半肉
-     *   血肉上部（深 0.46~0.72）**完全肉质**：和周围的肌肉同质感、有湿润高光
-     *   血肉深处（深 0.72~1.00）**血管**：外圈暗、内芯亮，并且开始分叉出毛细血管
-     * </pre>
-     *
-     * <p>所以"根"和"血管"不是两样东西 —— 是<b>同一条东西在不同深度上的样子</b>。
-     * 走到这片肉的深处，你已经分不清哪里是根、哪里是血管了。</p>
-     */
-    private void roots(float cx, float groundY, float trunkW) {
-        float g = this.grow();
-        float total = Math.max(40.0F, this.height - groundY);
-        float depthSpan = Math.max(1.0F, this.height - this.soilTop);
-
-        // ==================================================================
-        //  **主根（taproot）** —— 真实树的第一条根：从树干基部【垂直向下】，
-        //  在土里轻微摆动（不是笔直，也不是斜着拉到底），越深越细。
-        // ==================================================================
-        int steps = (int) (total / 2.0F);
-        float prevX = cx;
-        float prevY = groundY - 2.0F;
-        boolean branched = false;
-        for (int s = 1; s <= steps; s++) {
-            float t = s / (float) steps;
-            float y = groundY - 2.0F + total * t;
-            // 摆动：两个不同频率的正弦，幅度随深度略增 ——
-            // 看着是"顺着土的缝往下扎"，而不是一条铅垂线
-            float sway = (float) (Math.sin(t * 5.2D) * 0.55D + Math.sin(t * 13.0D + 1.2D) * 0.22D)
-                    * trunkW * (0.5F + t * 0.9F);
-            float x = cx + sway;
-            float w = Math.max(1.3F, trunkW * 0.40F * (1.0F - t * 0.72F));
-            float depth = (y - this.soilTop) / depthSpan;
-            this.rootSegment(x, y, w, depth, prevX, prevY);
-
-            // **侧根**：从主根的不同深度发出去（水平外扩、再下垂）
-            if (s > steps * 0.12F && s % 11 == 0) {
-                float side = (this.rng.nextBoolean() ? 1.0F : -1.0F);
-                this.lateral(x, y, side, w * 0.62F, depth, 1);
-            }
-            // **分叉**：走到血肉层上部时，主根分成三支 ——
-            // 这才是"三条路"该有的样子：一棵树先从一根长下来，再分开。
-            // 之前是三条从基部并排斜着画下去，那不像树，像三根钉子。
-            if (!branched && depth > 0.58F) {
-                branched = true;
-                for (int w2 = 0; w2 < 3; w2++) {
-                    float dir = (w2 - 1) * 0.85F;      // 左 / 中 / 右
-                    this.splitRoot(x, y, dir, w * 0.70F, depth, w2);
-                }
-            }
-            prevX = x;
-            prevY = y;
-        }
-
-        // ---- 土壤里的须根（只在土里，木质的细根）----
-        int fine = 8 + Math.round(g * 10.0F);
-        for (int i = 0; i < fine; i++) {
-            float side = (i % 2 == 0) ? 1.0F : -1.0F;
-            float spread = 0.3F + (i / (float) fine) * 1.8F;
-            float len = trunkW * (1.4F + this.rng.nextFloat() * 1.3F) * (0.7F + g);
-            float sx = cx + side * trunkW * 0.20F;
-            float sy = groundY - 1.0F;
-            float maxY = this.soilTop + (this.fleshTop - this.soilTop) * 0.9F;
-            float ey = Math.min(maxY, sy + len * (0.7F + g * 0.5F));
-            this.limbShaded(sx, sy, sx + side * len * spread, ey,
-                    Math.max(1.4F, trunkW * 0.26F), 0.8F, 1);
-        }
-
-        // ---- 血肉里的血管分叉（从三条主路的深处散出去）----
-        int vb = 10 + Math.round(g * 12.0F);
-        for (int i = 0; i < vb; i++) {
-            int way = i % 3;
-            int stage = 4 + (i % 3);
-            int[] node = this.wayNodes[way][Math.min(STAGES_PER_WAY - 1, stage)];
-            if (node == null || node[0] == 0) {
-                continue;
-            }
-            float nx = node[0] * this.ss;
-            float ny = node[1] * this.ss;
-            double ang = this.rng.nextDouble() * Math.PI * 2.0D;
-            this.capillary(nx, ny, ang, this.fleshTop, this.height, 2);
-        }
-
-        // 旧的那套"随机方向支根"不再画了 —— 新根系里主根、侧根、三支都是
-        // 按真实树的结构走的，再叠一层随机方向的粗根只会显得乱。
-    }
-
-    /**
-     * **一段根** —— 按深度决定它现在是什么。
-     *
-     * <pre>
-     *   深 0.00~0.22  木质：树皮的颜色 + 受光面
-     *   深 0.22~0.46  树皮裂开，里面透出肉
-     *   深 0.46~0.72  完全肉质
-     *   深 0.72~1.00  血管：外圈暗、内芯亮
-     * </pre>
-     */
-    private void rootSegment(float x, float y, float w, float depth, float fromX, float fromY) {
-        if (depth < 0.22F) {
-            this.disc((int) x, (int) y, w, this.bark[1], 0.95F);
-            this.blendDot((int) (x - w * 0.5F), (int) y, BARK_LIGHT, 0.22F);
-        } else if (depth < 0.46F) {
-            float k = (depth - 0.22F) / 0.24F;
-            this.disc((int) x, (int) y, w, this.bark[1], 0.9F);
-            this.disc((int) x, (int) y, w * 0.72F, MEAT_DEEP, 0.20F + k * 0.55F);
-            if (this.rng.nextInt(5) == 0) {
-                this.blendDot((int) x, (int) y, 0xFF160608, 0.32F);
-            }
-        } else if (depth < 0.72F) {
-            this.disc((int) x, (int) y, w * 0.96F, MEAT_DEEP, 0.85F);
-            this.blendDot((int) (x - w * 0.35F), (int) y, MEAT_FRESH, 0.28F);
-            this.blendDot((int) x, (int) (y + w * 0.3F), 0xFF20080C, 0.20F);
-            if (this.rng.nextInt(7) == 0) {
-                this.blendDot((int) x, (int) y, WET, 0.12F);
-            }
-        } else {
-            this.disc((int) x, (int) y, w + 1.5F, 0xFF2A080C, 0.55F);
-            this.disc((int) x, (int) y, w, MEAT_FRESH, 0.60F);
-            this.blendDot((int) x, (int) y, 0xFFD25A60, 0.34F);
-            // 走到血管这一段就开始散毛细血管
-            if (this.rng.nextInt(26) == 0) {
-                this.capillary(x, y, this.rng.nextDouble() * Math.PI * 2.0D,
-                        this.fleshTop, this.height, 2);
-            }
-        }
-    }
-
-    /**
-     * **按性格长的侧根** —— 先水平外扩、再向下弯（现实的规律），
-     * 弯曲程度和粗细按这条路走。
-     *
-     * <p>异化的根须又粗又爱分叉；灵化的又细又飘（几乎像丝）；
-     * 硅化的短直、拐角硬（像晶体而不是肉）。</p>
-     */
-    private void lateralStyled(float x, float y, float side, float w, float depth, int way) {
-        int idx = Math.min(way, 2);
-        float curl = WAY_CURL[idx];
-        float thick = WAY_THICK[idx];
-        depthSpanLocal = Math.max(1.0F, this.height - this.soilTop);
-
-        float px = x;
-        float py = y;
-        float dirX = side * 1.0F;
-        float dirY = 0.10F;
-        int steps = 22 + this.rng.nextInt(20);
-        for (int s = 0; s < steps; s++) {
-            // **向地性**：竖直分量持续增加 —— 侧根先平后垂，这就是那个弧
-            dirY += 0.026F / curl;
-            dirX *= (1.0F - 0.012F * curl);
-            // 灵化的会额外飘（正弦扰动）；硅化的几乎是直线
-            float wobble = curl > 1.0F
-                    ? (float) Math.sin(s * 0.42F + x * 0.03F) * 0.10F * curl
-                    : 0.0F;
-            px += (dirX + wobble) * 1.6F;
-            py += dirY * 1.6F;
-            if (px < 3.0F || px > this.width - 3.0F || py >= this.height - 2.0F) {
-                break;
-            }
-            float d = (py - this.soilTop) / depthSpanLocal;
-            float ww = Math.max(0.7F, w * thick * (1.0F - s / (float) steps * 0.82F));
-            this.rootSegment(px, py, ww, d, 0, 0);
-        }
-        // **末端一撮细根**（现实中根尖分出的那些短根）
-        this.fineRoots(px, py, dirX, dirY, WAY_FINE[idx], way);
-    }
+    /* ---- 树与叶 -------------------------------------------------------- */
 
     /** splitRoot 里用的深度跨度（避免每次重算）。 */
     private float depthSpanLocal = 1.0F;
 
-    /**
-     * **细根 + 根毛** —— 根尖那一撮。
-     *
-     * <p>现实中一棵树的根尖有几百万条，这里按密度倍率给一小撮：
-     * 短（6~20 像素）、细（<1 像素宽）、方向散开但偏母根方向。</p>
-     */
-    private void fineRoots(float x, float y, float dirX, float dirY, float density, int way) {
-        int idx = Math.min(way, 2);
-        int count = (int) ((6 + this.rng.nextInt(9)) * density);
-        float baseAng = (float) Math.atan2(dirY, dirX);
-        for (int i = 0; i < count; i++) {
-            // 方向：母根方向 ± 散开（硅化的散得小，因为不弯）
-            float spreadK = idx == 2 ? 0.55F : 1.15F;
-            float ang = baseAng + (this.rng.nextFloat() - 0.5F) * spreadK;
-            float len = (5.0F + this.rng.nextFloat() * 14.0F) * (0.6F + density * 0.4F);
-            float fx = x;
-            float fy = y;
-            for (int s = 0; s < (int) len; s++) {
-                ang += (this.rng.nextFloat() - 0.5F) * (idx == 2 ? 0.06F : 0.20F);
-                fx += (float) Math.cos(ang);
-                fy += (float) Math.sin(ang) * 1.15F;   // 略微向下
-                if (fy >= this.height - 1.0F || fx < 1.0F || fx > this.width - 1.0F) {
-                    break;
-                }
-                float d = (fy - this.soilTop) / depthSpanLocal;
-                this.rootSegment(fx, fy, Math.max(0.6F, 0.9F * WAY_THICK[idx]), d, 0, 0);
-            }
-            // **根毛**：细根末端后面那一小段密集的短毛（1 像素）
-            if (this.rng.nextBoolean()) {
-                int hairs = 3 + this.rng.nextInt(6);
-                for (int h = 0; h < hairs; h++) {
-                    float ha = ang + (this.rng.nextFloat() - 0.5F) * 1.6F;
-                    float hx = fx + (float) Math.cos(ha) * (1 + this.rng.nextInt(3));
-                    float hy = fy + (float) Math.sin(ha) * (1 + this.rng.nextInt(3));
-                    float hd = (hy - this.soilTop) / depthSpanLocal;
-                    this.rootSegment(hx, hy, 0.55F, hd, 0, 0);
-                }
-            }
-        }
-    }
-
-    /**
-     * **侧根** —— 从主根发出去，先<b>水平外扩</b>、再<b>向下弯</b>。
-     *
-     * <p>这个"先平后垂"的弧度是树根最认得出的特征。画成斜直线的话，
-     * 看着就像插进去几根棍子。</p>
-     */
-    private void lateral(float x, float y, float side, float w, float depth, int level) {
-        if (level <= 0 || w < 0.7F) {
-            return;
-        }
-        float px = x;
-        float py = y;
-        float dirX = side * 1.0F;
-        float dirY = 0.08F;
-        int steps = 26 + this.rng.nextInt(22);
-        float depthSpan = Math.max(1.0F, this.height - this.soilTop);
-        for (int s = 0; s < steps; s++) {
-            dirY += 0.030F;          // 逐渐下垂
-            dirX *= 0.982F;          // 水平速度衰减
-            px += dirX * 1.7F;
-            py += dirY * 1.7F;
-            if (px < 4.0F || px > this.width - 4.0F || py >= this.height - 2.0F) {
-                break;
-            }
-            float d = (py - this.soilTop) / depthSpan;
-            float ww = w * (1.0F - s / (float) steps * 0.8F);
-            this.rootSegment(px, py, Math.max(0.8F, ww), d, 0, 0);
-        }
-        // 末端再分一条细的
-        if (this.rng.nextBoolean()) {
-            this.lateral(px, py, side * (this.rng.nextBoolean() ? 1.0F : -1.0F),
-                    w * 0.5F, depth, level - 1);
-        }
-    }
-
-    /**
-     * **主根分出来的三支** —— 就是血肉线的三条路。
-     *
-     * @param dir -0.85 / 0 / +0.85（左 / 中 / 右）
-     */
-    private void splitRoot(float x, float y, float dir, float w, float depth, int way) {
-        float depthSpan = Math.max(1.0F, this.height - this.soilTop);
-        // 终点：左支往左下、中支往最深处、右支往右下
-        float tx = x + this.width * dir * 0.30F;
-        float ty = this.height * (way == 1 ? 0.98F : 0.90F);
-        tx = Math.max(10.0F, Math.min(this.width - 10.0F, tx));
-        int steps = (int) Math.max(30.0F, Math.hypot(tx - x, ty - y) / 2.0F);
-        float px = x;
-        float py = y;
-        float dirX = dir * 0.6F;
-        float dirY = 1.0F;
-        int nextStage = 0;
-        for (int s = 0; s <= steps; s++) {
-            float t = s / (float) steps;
-            // 往终点收，但只收一点点（收多了就是直线）——
-            // 加上自身的摆动，出来是一条弯的根
-            dirX = dirX * 0.94F + (dir * 0.9F) * 0.06F;
-            dirY = dirY * 0.96F + 1.0F * 0.04F;
-            float wob = (float) Math.sin(t * 9.0D + way * 2.1D) * 0.30F;
-            px += (dirX + wob) * 1.8F;
-            py += dirY * 1.8F;
-            if (py >= this.height - 2.0F || px < 4.0F || px > this.width - 4.0F) {
-                break;
-            }
-            float d = (py - this.soilTop) / depthSpan;
-            float ww = Math.max(1.0F, w * (1.0F - t * 0.6F));
-            this.rootSegment(px, py, ww, d, 0, 0);
-
-            // **侧根**：按这条路的性格发（异化多、灵化飘、硅化直）
-            int laterals = WAY_LATERALS[Math.min(way, 2)];
-            float step = Math.max(1.0F, steps / (float) laterals);
-            if (s > steps * 0.15F && Math.abs(s % step) < 1.0F) {
-                float side = (this.rng.nextBoolean() ? 1.0F : -1.0F);
-                this.lateralStyled(px, py, side, ww * 0.58F, d, way);
-            }
-
-            // 七个节点均分在这一支上
-            if (nextStage < STAGES_PER_WAY) {
-                float want = (nextStage + 1) / (float) (STAGES_PER_WAY + 1);
-                if (t >= want) {
-                    this.wayNodes[way][nextStage][0] = (int) (px / this.ss);
-                    this.wayNodes[way][nextStage][1] = (int) (py / this.ss);
-                    this.wayAlive[way] = true;
-                    nextStage++;
-                }
-            }
-        }
-    }
-
     /* ---- ③ 主干 + 分枝 -------------------------------------------------- */
 
-
-    // ======================================================================
-    //  **三条血肉线各自的根须性格**
-    //
-    //  三条路是三种"不再是人了"，根系也该是三种样子 —— 这比在界面上写名字
-    //  更能说明问题：看一眼根须就知道这个人往哪条路走了。
-    //
-    //      异化（向外、增殖）  根须多、粗、分叉密 —— 一路向外扩张
-    //      灵化（向内、轻）    根须细、长、弯曲    —— 像飘着的丝
-    //      硅化（无机、硬）    根须短、直、少分叉  —— 像晶体，不弯
-    // ======================================================================
-    /** 每条路发几条侧根。 */
-    private static final int[] WAY_LATERALS = {16, 10, 8};
-    /** 每条路侧根的弯曲程度（越大越飘/越弯，越小越直）。 */
-    private static final float[] WAY_CURL = {0.85F, 1.45F, 0.25F};
-    /** 每条路根须的粗细倍率。 */
-    private static final float[] WAY_THICK = {1.25F, 0.70F, 0.95F};
-    /** 每条路的细根密度倍率（末端那一撮）。 */
-    private static final float[] WAY_FINE = {1.50F, 1.00F, 0.70F};
-    /** 三条路的颜色（和 FleshLine 那套对得上）。 */
-    private static final int[] WAY_TINT = {0xFF4A1418, 0xFF2A2A34, 0xFF343038};
 
     /** 分叉点的高度比（树高的多少）。 */
     private static final float FORK_T = 0.42F;
@@ -1391,32 +1023,6 @@ public final class TreeTexture extends com.habaiwa.goetyrevenant.client.tree.Tre
     /*  像素工具                                                            */
     /* ------------------------------------------------------------------ */
 
-    /** 带明暗的一段粗线（树枝、树根都用它）。 */
-    private void limbShaded(float x0, float y0, float x1, float y1,
-                            float w0, float w1, int stepsPerPixel) {
-        float dx = x1 - x0;
-        float dy = y1 - y0;
-        float len = (float) Math.sqrt(dx * dx + dy * dy);
-        int steps = Math.max(2, (int) (len * Math.max(1, stepsPerPixel)));
-        for (int i = 0; i <= steps; i++) {
-            float t = i / (float) steps;
-            float x = x0 + dx * t;
-            float y = y0 + dy * t;
-            float w = w0 + (w1 - w0) * t;
-            int shade = (int) (t * 2.0F);
-            this.disc((int) x, (int) y, w * 0.5F, this.bark[Math.min(BARK.length - 1, 2 + shade)], 0.95F);
-            // 受光侧高光
-            float nx = -dy / Math.max(1.0F, len);
-            float ny = dx / Math.max(1.0F, len);
-            float dot = nx * LIGHT_X + ny * LIGHT_Y;
-            float side = dot > 0.0F ? 1.0F : -1.0F;
-            this.disc((int) (x + nx * side * w * 0.28F), (int) (y + ny * side * w * 0.28F),
-                    Math.max(0.7F, w * 0.22F), BARK_LIGHT, 0.28F);
-            // 背光侧压暗
-            this.disc((int) (x - nx * side * w * 0.34F), (int) (y - ny * side * w * 0.34F),
-                    Math.max(0.7F, w * 0.24F), this.bark[0], 0.35F);
-        }
-    }
 
     /** 一片叶子：椭圆的，带一点叶尖。 */
     private void leafShape(float cx, float cy, float r, int color) {

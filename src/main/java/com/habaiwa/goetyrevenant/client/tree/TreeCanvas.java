@@ -214,6 +214,107 @@ public abstract class TreeCanvas {
     /** 绘制用的随机源 —— 每个内容图一份，保证同一存档同一棵树长得一样。 */
     protected Random rng;
 
+    /** 当前阶数（决定树长多大）—— 树、根、种子都要读它。 */
+    protected int stage = -2;
+    /** 实际使用的树皮色阶。 */
+    protected int[] bark;
+    /** **湿润高光**：压到暗红灰（地下的湿，只是"不干"，不是"反光"）。 */
+    protected static final int WET = 0xFF7A4E52;
+
+    /** 光源方向（左上那颗亮星）—— 枝干与土面的受光面都按它算。 */
+    protected static final float LIGHT_X = -0.62F;
+    protected static final float LIGHT_Y = -0.78F;
+    /** 树皮的高光色。 */
+    protected static final int BARK_LIGHT = 0xFFA8C4D8;
+
+    // ==== 血肉层用到的色（按解剖学的真实层次取色，不是一支红刷到底）====
+    // ======================================================================
+    //  **血肉的色，全部按"地下无光"来取。**
+    //
+    //  我第一版画的是**手术台上的新鲜肉**：鲜红、油亮、高饱和。那是**有强光**的样子。
+    //  而这里是土壤底下 —— 没有光。真实的、无光环境里的血肉：
+    //
+    //      · 深暗的红褐，明度只有 15~30%（接近黑）
+    //      · 偏紫、偏褐（血氧化了、缺氧了）
+    //      · 饱和度低 —— 不是"红"，是"暗红里带褐"
+    //
+    //  **更关键的一条**：明度必须和土壤（约 0x4A3626，R≈74）落在同一个区间。
+    //  差一倍的两层摆在一起，永远像拼贴 —— 加多厚的过渡带都救不回来。
+    //  所以下面这些值的红通道全部压在 60~90 之间，和土一个量级。
+    // ======================================================================
+    /** 肌肉（"鲜"也只是暗红 —— 地下没有光）。R≈74，和土壤同级。 */
+    protected static final int MEAT_FRESH = 0xFF4A1418;
+    /** 深一点的肌肉。 */
+    protected static final int MEAT_DEEP = 0xFF361014;
+    /** 压实的组织。 */
+    protected static final int MEAT_DARK = 0xFF240A0E;
+
+    /** 树皮的默认色阶。 */
+    /** 树皮色阶（暗 → 亮）。 */
+    protected static final int[] BARK = {
+            0xFF120E10, 0xFF1E1614, 0xFF2B1F1A, 0xFF392821, 0xFF473226,
+            0xFF553D2E, 0xFF634836, 0xFF71523E, 0xFF7F5C46};
+
+    /** 长到哪一步了（0~1 连续插值）。 */
+    protected float grow() {
+        return Math.max(0.0F, Math.min(1.0F, this.stage / 7.0F));
+    }
+
+    /** **一条带阴影的枝干** —— 树和根共用（根其实也是枝，只是一路向下）。 */
+    /** 带明暗的一段粗线（树枝、树根都用它）。 */
+    protected void limbShaded(float x0, float y0, float x1, float y1,
+                            float w0, float w1, int stepsPerPixel) {
+        float dx = x1 - x0;
+        float dy = y1 - y0;
+        float len = (float) Math.sqrt(dx * dx + dy * dy);
+        int steps = Math.max(2, (int) (len * Math.max(1, stepsPerPixel)));
+        for (int i = 0; i <= steps; i++) {
+            float t = i / (float) steps;
+            float x = x0 + dx * t;
+            float y = y0 + dy * t;
+            float w = w0 + (w1 - w0) * t;
+            int shade = (int) (t * 2.0F);
+            this.disc((int) x, (int) y, w * 0.5F, this.bark[Math.min(BARK.length - 1, 2 + shade)], 0.95F);
+            // 受光侧高光
+            float nx = -dy / Math.max(1.0F, len);
+            float ny = dx / Math.max(1.0F, len);
+            float dot = nx * LIGHT_X + ny * LIGHT_Y;
+            float side = dot > 0.0F ? 1.0F : -1.0F;
+            this.disc((int) (x + nx * side * w * 0.28F), (int) (y + ny * side * w * 0.28F),
+                    Math.max(0.7F, w * 0.22F), BARK_LIGHT, 0.28F);
+            // 背光侧压暗
+            this.disc((int) (x - nx * side * w * 0.34F), (int) (y - ny * side * w * 0.34F),
+                    Math.max(0.7F, w * 0.24F), this.bark[0], 0.35F);
+        }
+    }
+
+    // ----------------------------------------------------------------------
+    //  超采样
+    // ----------------------------------------------------------------------
+    /** 超采样上限（图小的时候用它抗锯齿；图大到爆内存时降到 1）。 */
+    protected static final int SS_MAX = 2;
+    /** 这次实际用几倍超采样。 */
+    protected int ss = SS_MAX;
+
+    // ----------------------------------------------------------------------
+    //  **绘制产物** —— 画的时候往这里填，之后界面读它们做交互
+    //  （悬停高亮、点选槽位、点击叶片）。
+    //  放在画布这一层，是为了让各画笔都能往同一个容器里写；
+    //  之前它们散在 TreeTexture 里，任何一块都搬不动。
+    // ----------------------------------------------------------------------
+    /** 嵌入位（主干上的年轮节）：{x, y}。 */
+    protected final java.util.List<int[]> slots = new java.util.ArrayList<>(8);
+    /** 强化叶：{x, y, r} —— 前几个是嵌入位旁的年轮叶，之后是树冠里的叶片。 */
+    protected final java.util.List<int[]> leaves = new java.util.ArrayList<>(
+            com.habaiwa.goetyrevenant.common.body.UpgradeSlots.COUNT + 8);
+    /** 三条路各自七阶 —— 阶数由血肉线那边定义，这里只引用。 */
+    protected static final int STAGES_PER_WAY =
+            com.habaiwa.goetyrevenant.common.flesh.FleshLine.STAGES;
+    /** **三条路 × 七阶的节点坐标**（{x, y}）。 */
+    protected final int[][][] wayNodes = new int[3][STAGES_PER_WAY][2];
+    /** 每条路有没有被走到（决定画不画它的细节）。 */
+    protected final boolean[] wayAlive = new boolean[3];
+
     /** 星光的颜色（照在土面上、叶簇缝隙里透出来的那种光）。 */
     protected static final int STARLIGHT = 0xFFCFE8FF;
     /** 苔藓色（根须上、土面上的绿）。 */
