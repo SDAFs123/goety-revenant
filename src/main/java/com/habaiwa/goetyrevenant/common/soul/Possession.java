@@ -71,6 +71,11 @@ public final class Possession {
     public static void possess(ServerPlayer player, Entity target) {
         if (target instanceof CorpseEntity corpse) {
             boolean own = corpse.isOwner(player);
+            // **站到身体所在的位置** —— 之前 corpse 这条分支没有 teleport
+            // （附身活着的东西那条有），于是回自己身体时玩家停在【灵魂站的那一格】：
+            // 灵魂飘在半空或差半格点右键，复活后就悬空/错位，不像"回到了自己的身体"。
+            // 身体就在眼前（canReturnToOwnBody 限定附身半径内），复活后就该站在它的位置上。
+            net.minecraft.world.phys.Vec3 corpsePos = corpse.position();
             corpse.giveItemsTo(player);
             // 继承对方的身份（皮肤）：记下被附身者的 UUID，客户端用它渲染
             if (!own && corpse.getOwnerUUID() != null) {
@@ -87,6 +92,7 @@ public final class Possession {
                 // 自己的身体 = 永远彻底复活，**不设限时、不会被弹出**。
                 // （原设计让契合度不满时"限时附身"是错的：玩家会莫名被挤出自己的身体。）
                 boolean drifting = SoulData.isDrifting(player);
+                player.teleportTo(corpsePos.x, corpsePos.y, corpsePos.z);
                 endSoul(player);
                 // 灵魂回到了自己的身体 —— 这就是"肉身与灵魂重新融合"的那一刻
                 LingHua.recordSoulWalk(player);
@@ -105,7 +111,16 @@ public final class Possession {
                 return;
             }
 
+            player.teleportTo(corpsePos.x, corpsePos.y, corpsePos.z);
             endSoul(player);
+            // **附身的是别人的尸体** —— 按 §4.7，这种状态下用不了聚晶/法杖。
+            // 之前 corpse 这条分支压根没标记，于是"附身别人"反而比"附身村民"更自由，
+            // 和设计正好相反。标记放在 endSoul 之后（它会清掉，所以顺序不能反）。
+            // §4.2：其他玩家的尸体 = 契合度 95%；§4.3：附身时长 = 20 分钟 × 契合度
+            SoulData.setPossession(player, "other",
+                    Math.round(com.habaiwa.goetyrevenant.common.soul.SoulConstants
+                            .soulDurationTicks() * 0.95F),
+                    false, 0.95F);
             player.displayClientMessage(Component.translatable("message.goety_revenant.possess_other_corpse"), false);
             return;
         }
@@ -457,6 +472,24 @@ public final class Possession {
     public static void endSoul(ServerPlayer player) {
         GameType previous = SoulData.getPreviousGameMode(player);
         BodyTraits.clear(player);
+        // ------------------------------------------------------------------
+        //  **把"附身痕迹"清干净 —— 不清的话，回到自己的身体也不能正常游玩。**
+        //
+        //  isPossessing() 有 8 处在用，最关键的一处是 EmbeddedCasting：
+        //      if (SoulData.isPossessing(player)) { 不给施法 }
+        //  那是 §4.7 的正确限制（附在【别人】身体里用不了聚晶/法杖）。
+        //
+        //  但清除只在 eject() 里做过，endSoul() 里没有。于是这条链走完：
+        //      附身在别人身体里 → 契合度到点被弹出 → 飘回自己的尸体 → 附身回自己
+        //  玩家已经在自己身体里了，isPossessing 却还是 true
+        //  —— 聚晶/法杖永远用不了，怎么都不像"正常游玩"。
+        //
+        //  顺带把 soulMode / 附身类型也清掉：残留会让下次 isDrifting 判错
+        //  （把死亡游离误当成出窍游离，于是"完整复活"被按"残破躯体"处理）。
+        // ------------------------------------------------------------------
+        SoulData.clearPossession(player);
+        SoulData.setSoulMode(player, "");
+        SoulData.setTicks(player, 0);
         SoulData.setSoul(player, false);
         exitSoulForm(player);
         player.setGameMode(previous == null || previous == GameType.SPECTATOR ? GameType.SURVIVAL : previous);
