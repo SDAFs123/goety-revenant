@@ -1,0 +1,11 @@
+{
+  "required": false,
+  "minVersion": "0.8",
+  "package": "com.habaiwa.goetyrevenant.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "EnchantmentMixin"
+  ],
+  "client": [],
+  "server": []
+}

@@ -35,6 +35,7 @@ minecraft {
 
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
+
 repositories {
     // 本机到中央仓/插件门户很慢，优先走阿里云镜像，命中不到再回落到原仓。
     maven { name = 'AliyunPublic'; url = 'https://maven.aliyun.com/repository/public' }
