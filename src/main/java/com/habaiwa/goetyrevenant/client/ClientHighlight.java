@@ -1,6 +1,6 @@
 package com.habaiwa.goetyrevenant.client;
 
-import com.habaiwa.goetyrevenant.common.HighlightHook;
+import com.habaiwa.goetyrevenant.common.tooltip.HighlightHook;
 import com.habaiwa.goetyrevenant.common.entity.CorpseEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;

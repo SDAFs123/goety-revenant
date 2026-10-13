@@ -1,4 +1,4 @@
-package com.habaiwa.goetyrevenant.client.screen;
+package com.habaiwa.goetyrevenant.client.screen.tree;
 
 import com.habaiwa.goetyrevenant.client.tree.SeedPainter;
 

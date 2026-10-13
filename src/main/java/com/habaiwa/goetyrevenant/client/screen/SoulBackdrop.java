@@ -551,8 +551,8 @@ public final class SoulBackdrop {
         return "星空 未开始";
     }
 
-    /** 当空之宫的星色（和背景星同一套色）。 */
-    static int signColor(int index) {
+    /** 当空之宫的星色（和背景星同一套色）。魂树界面在另一个包里，所以要 public。 */
+    public static int signColor(int index) {
         return STAR_COLORS[Math.floorMod(index, STAR_COLORS.length)];
     }
 

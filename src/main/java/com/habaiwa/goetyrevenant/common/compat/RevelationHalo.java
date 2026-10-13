@@ -1,6 +1,6 @@
 package com.habaiwa.goetyrevenant.common.compat;
 
-import com.habaiwa.goetyrevenant.compat.RevenantCompat;
+import com.habaiwa.goetyrevenant.common.compat.RevenantCompat;
 import java.util.Locale;
 import javax.annotation.Nullable;
 import net.minecraft.core.registries.BuiltInRegistries;

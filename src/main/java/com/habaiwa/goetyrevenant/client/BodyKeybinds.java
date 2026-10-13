@@ -1,6 +1,5 @@
 package com.habaiwa.goetyrevenant.client;
 
-import com.habaiwa.goetyrevenant.client.screen.BodyScreen;
 import com.habaiwa.goetyrevenant.common.network.BodyActionMessage;
 import com.habaiwa.goetyrevenant.common.network.RevenantNetwork;
 import com.mojang.blaze3d.platform.InputConstants;
@@ -128,7 +127,7 @@ public final class BodyKeybinds {
                 RevenantNetwork.CHANNEL.sendToServer(new BodyActionMessage(BodyActionMessage.OPEN, ""));
                 // 嵌入界面重做成**树**（魂树）。旧的人体解剖图保留在 BodyScreen，
             // 需要时可以用命令打开，但默认入口是树。
-            Minecraft.getInstance().setScreen(new com.habaiwa.goetyrevenant.client.screen.TreeScreen());
+            Minecraft.getInstance().setScreen(new com.habaiwa.goetyrevenant.client.screen.tree.TreeScreen());
             }
         }
     }

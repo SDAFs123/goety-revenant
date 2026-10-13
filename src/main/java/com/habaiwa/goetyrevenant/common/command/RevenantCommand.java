@@ -54,7 +54,6 @@ public final class RevenantCommand {
             ServerPlayer player = source.getPlayerOrException();
             BodyModData.setUnlocked(player, value);
             RevenantNetwork.sendBodyState(player);
-            RevenantNetwork.openBody(player);
             source.sendSuccess(() -> Component.translatable("command.goety_revenant.unlock",
                     Component.translatable(value ? "command.goety_revenant.on" : "command.goety_revenant.off")), true);
             return 1;
@@ -105,7 +104,6 @@ public final class RevenantCommand {
             }
             Embedding.applyAll(player);
             RevenantNetwork.sendBodyState(player);
-            RevenantNetwork.openBody(player);
             return 1;
         } catch (Exception e) {
             source.sendFailure(Component.translatable("command.goety_revenant.need_player"));

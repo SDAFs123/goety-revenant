@@ -1,4 +1,4 @@
-package com.habaiwa.goetyrevenant.common;
+package com.habaiwa.goetyrevenant.common.tooltip;
 
 import com.habaiwa.goetyrevenant.client.BodyClientState;
 import com.habaiwa.goetyrevenant.common.compat.RevelationHalo;

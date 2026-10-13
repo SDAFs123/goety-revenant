@@ -40,11 +40,8 @@ public final class RevenantNetwork {
                 .decoder(BodyActionMessage::decode)
                 .consumerMainThread(BodyActionMessage::handle)
                 .add();
-        CHANNEL.messageBuilder(OpenBodyMessage.class, 3, NetworkDirection.PLAY_TO_CLIENT)
-                .encoder(OpenBodyMessage::encode)
-                .decoder(OpenBodyMessage::decode)
-                .consumerMainThread(OpenBodyMessage::handle)
-                .add();
+        // id 3 曾经是 OpenBodyMessage（打开旧的七窍"人体图"界面）——
+        // 七窍已被魂树取代，人体图界面连同它一起删了。id 号不补。
         CHANNEL.messageBuilder(CastEmbeddedMessage.class, 4, NetworkDirection.PLAY_TO_SERVER)
                 .encoder(CastEmbeddedMessage::encode)
                 .decoder(CastEmbeddedMessage::decode)
@@ -205,11 +202,6 @@ public final class RevenantNetwork {
         CHANNEL.send(PacketDistributor.PLAYER.with(() -> player),
                 new ConverterSyncMessage(pos, converter.getSelectedMask(),
                         converter.cageSouls(), converter.getProgress()));
-    }
-
-    /** 让这名玩家的客户端打开改造身体界面。 */
-    public static void openBody(ServerPlayer player) {
-        CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new OpenBodyMessage());
     }
 
     /** 把改造状态整份推给该玩家的客户端。 */

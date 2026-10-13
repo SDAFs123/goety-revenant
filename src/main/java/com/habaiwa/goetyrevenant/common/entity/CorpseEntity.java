@@ -1,5 +1,7 @@
 package com.habaiwa.goetyrevenant.common.entity;
 
+import com.habaiwa.goetyrevenant.common.tooltip.HighlightHook;
+
 import java.util.Collections;
 import java.util.UUID;
 import javax.annotation.Nullable;
@@ -160,7 +162,7 @@ public class CorpseEntity extends LivingEntity {
     @Override
     public boolean isCurrentlyGlowing() {
         return super.isCurrentlyGlowing()
-                || com.habaiwa.goetyrevenant.common.HighlightHook.isHighlighted(this);
+                || com.habaiwa.goetyrevenant.common.tooltip.HighlightHook.isHighlighted(this);
     }
 
     @Override

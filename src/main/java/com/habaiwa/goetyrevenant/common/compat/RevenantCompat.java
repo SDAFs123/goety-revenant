@@ -1,4 +1,4 @@
-package com.habaiwa.goetyrevenant.compat;
+package com.habaiwa.goetyrevenant.common.compat;
 
 import com.habaiwa.goetyrevenant.GoetyRevenant;
 import com.habaiwa.goetyrevenant.common.soul.Attunement;

@@ -1,5 +1,7 @@
 package com.habaiwa.goetyrevenant.client;
 
+import com.habaiwa.goetyrevenant.common.tooltip.HighlightHook;
+
 import com.habaiwa.goetyrevenant.GoetyRevenant;
 import com.habaiwa.goetyrevenant.client.render.CorpseRenderer;
 import com.habaiwa.goetyrevenant.client.render.RevenantRenderer;
@@ -21,7 +23,7 @@ public final class ClientEvents {
     @SubscribeEvent
     public static void onClientSetup(net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent event) {
         // 灵魂视角高亮自己尸体的钩子
-        com.habaiwa.goetyrevenant.common.HighlightHook.set(new com.habaiwa.goetyrevenant.client.ClientHighlight());
+        com.habaiwa.goetyrevenant.common.tooltip.HighlightHook.set(new com.habaiwa.goetyrevenant.client.ClientHighlight());
     }
 
     /**

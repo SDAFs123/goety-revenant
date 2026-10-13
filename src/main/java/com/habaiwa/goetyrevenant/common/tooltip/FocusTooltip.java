@@ -1,4 +1,4 @@
-package com.habaiwa.goetyrevenant.common;
+package com.habaiwa.goetyrevenant.common.tooltip;
 
 import com.Polarice3.Goety.api.items.magic.IFocus;
 import com.habaiwa.goetyrevenant.common.body.FocusPassive;

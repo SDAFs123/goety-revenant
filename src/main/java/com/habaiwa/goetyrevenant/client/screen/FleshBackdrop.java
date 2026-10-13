@@ -21,7 +21,7 @@ import net.minecraft.client.gui.GuiGraphics;
  * <h3>为什么这样不卡</h3>
  * <p>整张背景<b>只在窗口尺寸变化时生成一次</b>，生成结果是一张"矩形清单"。
  * 之后每帧只是照着清单发几百次 {@code fill()}，不做任何三角函数或随机数。
- * 和 {@code BodyScreen} 里伤口那套缓存是同一个思路。</p>
+ * （思路来自已经删除的七窍人体图界面里那套伤口缓存。）</p>
  */
 final class FleshBackdrop {
     private static final int VOID = 0xF00A0406;

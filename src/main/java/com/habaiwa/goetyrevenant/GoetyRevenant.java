@@ -1,5 +1,9 @@
 package com.habaiwa.goetyrevenant;
 
+import com.habaiwa.goetyrevenant.common.tooltip.RevelationHaloTooltip;
+
+import com.habaiwa.goetyrevenant.common.tooltip.FocusTooltip;
+
 import com.habaiwa.goetyrevenant.common.event.RevenantEvents;
 import com.habaiwa.goetyrevenant.init.ModCreativeTabs;
 import com.habaiwa.goetyrevenant.init.ModEffects;
@@ -39,7 +43,7 @@ public class GoetyRevenant {
         ModCreativeTabs.register(modBus);
 
         RevenantNetwork.register();
-        com.habaiwa.goetyrevenant.compat.RevenantCompat.init();
+        com.habaiwa.goetyrevenant.common.compat.RevenantCompat.init();
         com.habaiwa.goetyrevenant.common.compat.EnigmaticLegacyCompat.init();
         MinecraftForge.EVENT_BUS.register(com.habaiwa.goetyrevenant.common.compat.EnigmaticLegacyCompat.class);
         // 调试指令：/grdebug ...
@@ -66,8 +70,8 @@ public class GoetyRevenant {
         MinecraftForge.EVENT_BUS.register(com.habaiwa.goetyrevenant.common.body.ShenShi.class);
         // 所有聚晶的 tooltip（被动 + 归属窍）
         // 注意：这个类【没有】类级注解，必须在这里手动注册 —— 别再加注解，那会注册两次。
-        MinecraftForge.EVENT_BUS.register(com.habaiwa.goetyrevenant.common.FocusTooltip.class);
+        MinecraftForge.EVENT_BUS.register(com.habaiwa.goetyrevenant.common.tooltip.FocusTooltip.class);
         // 给启示录的光环加上我们的内容（零侵入，走 ItemTooltipEvent）
-        MinecraftForge.EVENT_BUS.register(com.habaiwa.goetyrevenant.common.RevelationHaloTooltip.class);
+        MinecraftForge.EVENT_BUS.register(com.habaiwa.goetyrevenant.common.tooltip.RevelationHaloTooltip.class);
     }
 }

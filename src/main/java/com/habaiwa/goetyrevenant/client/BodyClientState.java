@@ -27,10 +27,8 @@ public final class BodyClientState {
     }
 
     /** 由命令触发打开界面。 */
-    public static void openScreen() {
-        net.minecraft.client.Minecraft.getInstance()
-                .setScreen(new com.habaiwa.goetyrevenant.client.screen.BodyScreen());
-    }
+    // openScreen() 删了 —— 它打开的是旧的七窍"人体图"（BodyScreen），
+    // 那个界面已随七窍一起废弃，默认入口是魂树（见 BodyKeybinds 的 OPEN_BODY）。
 
     @Nullable
     public static BodyStateMessage get() {
