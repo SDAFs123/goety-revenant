@@ -144,3 +144,54 @@ client/tree/
 2. `CHANGELOG-INTERNAL.md` —— 改动记录，写清"依据设计哪一条"
 3. **替换旧实现时，同一次改动内删掉旧的** —— 不留"留着对照"的代码
 4. **每次大改后跑一次零调用扫描**，误报已总结在 CHANGELOG 里
+
+
+---
+
+## 六、实施进度（截至 2026-10-13）
+
+### 已完成
+
+**阶段 1 · 死代码清除** —— 两轮共删 **1032 行**：
+5 个 `*Old` 方法 / `USE_OLD_TREE` 开关与旧针叶树分支 / `trunk` `ring` /
+`blendZoneOld2` `muscleZone` `fleshShallow` `routeRoot` `legacyRoots` /
+`blendZonePlainColor` / 零调用私有方法 5 个 / 三段互相矛盾的过时注释块。
+
+**阶段 2 · 像素层** —— `client/tree/TreeCanvas.java`
+像素缓冲 + 绘制原语 + 内存直写（反射拿首地址，绕开每次几十纳秒的 JNI 边界）。
+
+**阶段 4 · 布局常量** —— `client/tree/TreeLayout.java`
+消灭了"同一比例在 TreeTexture / TreeScreen / SoulBackdrop 三处手抄"。
+顺带删掉一个零使用的死常量（`SKY_END`）。
+
+**阶段 3 · 画笔（部分）**
+
+| 文件 | 职责 | 行数 |
+|---|---|---|
+| `TreeCanvas` | 像素层 + **共用状态/工具/配色**（rng、stage、grow、bark、leaf、choices、ss、slots、leaves、wayNodes、wayAlive、shift、capillary、limbShaded、光照、肉色） | 384 |
+| `TreeLayout` | 内容图分区常量 | 44 |
+| `TerrainPainter` | 土壤 / 过渡层 / 血肉土壤 | 645 |
+| `SeedPainter` | 种子（橡子）/ 裂开的种子 / 幼苗 | 342 |
+| `RootPainter` | 主根 / 侧根（三条路性格）/ 细根 / 根毛 / 三路分叉 | 350 |
+
+**`TreeTexture.java`：3855 → 1156 行（−70%）**
+**全项目净减约 900 行**（死代码多于新增的拆分）。
+
+### 剩余
+
+- **`TreePainter`**（树干 / 枝 / 冠 / 叶簇 / 树影 / 光点，11 个方法约 320 行）——
+  依赖已全部上提到 `TreeCanvas`，可以搬了
+- **`NodesPainter`**（嵌入槽 / 强化叶 / 三路节点与连线）
+- 阶段 5~8：附身领域重组、事件拆分、总线标注、客户端状态生命周期
+
+### 方法（三次失败换来的）
+
+| 教训 | 做法 |
+|---|---|
+| 脚本正则匹配不到实际写法 | **方法搬移一律用 `edit`** —— 它要求 old_string **唯一出现**，不唯一就报错 |
+| 多行字面量边界判断错 | 按**括号配平**数，不看分号 |
+| `indexOf` 文本定位不可靠 | 同上 —— `edit` 天然规避 |
+| PowerShell `-replace` 的 `$1` 被解析成空 | **别用 PowerShell 改代码**；只用于统计与构建 |
+| 回滚会丢未提交的改动 | **重要改动先提交，再下一步** |
+
+**脚本只用于只读用途**（统计、扫描、验证）。
