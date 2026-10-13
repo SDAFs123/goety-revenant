@@ -62,9 +62,15 @@ public class SoulHudOverlay implements IGuiOverlay {
         if (minecraft.player == null || minecraft.options.hideGui) {
             return;
         }
-        // 跳井解锁之后，这条能量条一直由我们画（活人也画）——
-        // 因为**它要随灵魂温度变色**，本体那张固定贴图做不到。
-        if (!com.habaiwa.goetyrevenant.client.BodyClientState.unlocked()) {
+        // ------------------------------------------------------------------
+        //  **灵魂状态下无论如何都要画** —— 那条能量就是灵魂的血。
+        //
+        //  解锁之后再扩展到"活人也画"（它要随灵魂温度变色，本体那张固定贴图做不到）。
+        //  之前只有一个 unlocked 条件，于是没跳井的玩家变成灵魂后看不到能量条 ——
+        //  而灵魂状态恰恰是最需要看它的时候（那就是唯一的血条）。
+        // ------------------------------------------------------------------
+        boolean soul = ClientSoulState.isSoul();
+        if (!soul && !com.habaiwa.goetyrevenant.client.BodyClientState.unlocked()) {
             return;
         }
 
@@ -72,7 +78,7 @@ public class SoulHudOverlay implements IGuiOverlay {
         int y = height - MARGIN_BOTTOM;
 
         // 灵魂：多一根指向身体的指针；活人：只有条。
-        if (ClientSoulState.isSoul()) {
+        if (soul) {
             renderNeedle(graphics, minecraft, x + BAR_WIDTH / 2, y - NEEDLE_OFFSET);
         }
         renderEnergy(graphics, x, y);
