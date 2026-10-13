@@ -28,15 +28,8 @@ public final class ModTags {
             TagKey.create(net.minecraft.core.registries.Registries.ITEM,
                     new ResourceLocation(GoetyRevenant.MODID, "scythes"));
 
-    /**
-     * **精魂收割物品** —— Malum 自己的标签 {@code #malum:soul_hunter_weapon}。
-     *
-     * <p>用户 2026-09-27 指定「适用物品：精魂收割物品（本模组与 Iron 的法术与魔法书的武器、工具）
-     * `#malum:soul_hunter_weapon`」—— 所以直接引用对方的标签，不自己维护一份名单。</p>
-     */
-    public static final TagKey<net.minecraft.world.item.Item> SOUL_HUNTER =
-            TagKey.create(net.minecraft.core.registries.Registries.ITEM,
-                    new ResourceLocation("malum", "soul_hunter_weapon"));
+    // （曾经有过一个 SOUL_HUNTER 标签 —— 那是我把用户引用的"参照系字段"当成了规格，
+    //   误把聚魂护符做成了附魔。它其实是个饰品，用不上标签，已删。）
 
     /** **完全察觉**：本身就是灵体，无视距离能看见并攻击灵魂。 */
     public static final TagKey<EntityType<?>> SOUL_SEERS =

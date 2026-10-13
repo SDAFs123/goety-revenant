@@ -10,11 +10,18 @@ import net.minecraft.world.level.Level;
 import javax.annotation.Nullable;
 
 /**
- * 聚魂护符。
+ * **聚魂护符** —— 一个**饰品**，带在身上就让"击杀获得的灵魂能量 +5%"。
  *
- * <p>佩戴（带在身上即可）后击杀生物：按**怪物强弱**产出 Malum 的**精魄**，
- * 同时回充**大量诡厄巫法灵魂能量**。这是精魄的唯一来源 ——
- * Malum 原本的怪物掉落会被我们拦掉（见 {@code compat.MalumCompat}）。</p>
+ * <p>用户 2026-09-27 的规格：「聚魂护符修改为增加获取灵魂能量的**护符**增加 **5%**」
+ * —— 参照 Malum 的 {@code spirit_plunder}（精魂劫掠）的作用方式，
+ * 但给的是**诡厄巫法的灵魂能量**，不是精魄。</p>
+ *
+ * <p>⚠️ <b>它不产精魄。</b>用户同一天明确纠正过：「我不需要这样产精魄啊，
+ * **全部只产生灵魂能量**，不过聚魂护符这个名字不错」——
+ * 所以"按怪物强弱产精魄"那套已去掉，Malum 原本的精魄掉落由
+ * {@code compat.MalumCompat.onDrops} 拦掉，击杀改给灵魂能量。</p>
+ *
+ * <p>带在身上即可（背包 / 副手 / Curios 饰品栏都算），**不需要拿在主手**。</p>
  */
 public class SoulHarvestCharmItem extends Item {
     public SoulHarvestCharmItem(Properties properties) {

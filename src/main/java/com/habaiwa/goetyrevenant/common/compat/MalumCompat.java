@@ -33,7 +33,8 @@ public final class MalumCompat {
     /** 装了本模组后，灵魂能量获取的常态加成。 */
     public static final float SOUL_GAIN_BONUS = 1.20F;
     /** 聚魂护符的额外加成。 */
-    // CHARM_BONUS 删了 —— 聚魂护符的加成改成读附魔等级（charmBonus）
+    /** **聚魂护符**带在身上时，击杀获得的灵魂能量 +5%（用户 2026-09-27 的规格）。 */
+    public static final float CHARM_BONUS = 1.05F;
 
     private MalumCompat() {
     }
@@ -140,13 +141,36 @@ public final class MalumCompat {
      * @return 1.0 = 无加成；1.05 = I 级；1.10 = II 级
      */
     public static float charmBonus(ServerPlayer player) {
-        net.minecraft.world.item.enchantment.Enchantment e =
-                com.habaiwa.goetyrevenant.init.ModEnchantments.SOUL_HARVEST_CHARM.get();
-        if (e == null) {
-            return 1.0F;
+        return hasCharm(player) ? CHARM_BONUS : 1.0F;
+    }
+
+    /**
+     * 身上带没带**聚魂护符**（背包 / 副手 / Curios 都算）。
+     *
+     * <p>用户 2026-09-27：「带在身上击杀生物……」——
+     * 它是个**饰品**（`goety_revenant:soul_harvest_charm`），带在身上就生效，
+     * 不需要拿在手里。</p>
+     */
+    public static boolean hasCharm(ServerPlayer player) {
+        net.minecraft.world.item.Item charm =
+                com.habaiwa.goetyrevenant.init.ModItems.SOUL_HARVEST_CHARM.get();
+        for (ItemStack stack : player.getInventory().items) {
+            if (!stack.isEmpty() && stack.is(charm)) {
+                return true;
+            }
         }
-        return com.habaiwa.goetyrevenant.common.enchant.SoulHarvestCharmEnchantment
-                .bonusOf(player.getMainHandItem(), e);
+        for (ItemStack stack : player.getInventory().offhand) {
+            if (!stack.isEmpty() && stack.is(charm)) {
+                return true;
+            }
+        }
+        try {
+            return top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(player)
+                    .map(handler -> handler.findFirstCurio(charm).isPresent())
+                    .orElse(false);
+        } catch (Throwable ignored) {
+            return false;
+        }
     }
 
     /**
