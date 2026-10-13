@@ -1,15 +1,22 @@
 # 第三方组件
 
-本项目**内嵌**了以下第三方模组（放在 `META-INF/jarjar/` 下，由 Forge 的 JarJar 在运行时加载）：
-
-## DataTip
+## DataTip（可选依赖，不是本仓库的一部分）
 
 - 项目：https://github.com/cooobird/DataTip
-- 版本：1.2.7-forge（作者提供的 `forge-1.20.1` 分支，直接编译，未修改任何源码）
+- 版本：1.2.7-forge（作者提供的 `forge-1.20.1` 分支）
 - 作者：cooobird
-- 授权：GNU General Public License v3.0
-- 用途：提供"用 JSON 定义物品提示框内容"的能力。本项目的物品提示内容写在
-  `assets/goety_revenant/datatip/*.json` 里，由它解析和渲染。
+- 授权：**GNU General Public License v3.0**
 
-因为内嵌了 GPL v3 的组件，本项目整体也以 GPL v3.0 发布（见 LICENSE）。
-DataTip 的源码未做任何改动；如需其源码，请见上面的项目地址。
+**它不内嵌在本项目的 jar 里**，而是作为**独立的模组**和本模组一起放进整合包。
+原因是授权不兼容：本项目是 MIT，而 GPL v3 有传染性 ——
+把 GPL 代码并进 MIT 作品是不允许的。两个独立作品可以一起分发，各自适用各自的条款。
+
+本项目对 DataTip 的**使用**仅限于：把提示框内容写成它认识的 JSON
+（放在 `assets/goety_revenant/datatip/*.json`）。**没有引用它的任何代码，
+也没有修改它的源码。**
+
+## Cloth Config
+
+- 项目：https://github.com/shedaniel/cloth-config
+- 授权：GNU Lesser General Public License v3.0
+- 用途：配置界面。同样是独立模组，不内嵌。
