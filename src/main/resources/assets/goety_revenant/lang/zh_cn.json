@@ -10,7 +10,6 @@
   "item.goety_revenant.revenant_spawn_egg": "回魂者刷怪蛋",
   "entity.goety_revenant.revenant": "回魂者",
   "entity.goety_revenant.corpse": "尸体",
-  "effect.goety_revenant.soul_ward": "魂佑",
   "message.goety_revenant.soul_start": "你死了 —— 但灵魂没有散去。20 分钟内找到你的身体：%s 贴身即可附身。",
   "message.goety_revenant.soul_hint": "灵魂剩余 %s 分 %s 秒 ｜ 灵魂能量 %s ｜ 契合度 %s%%",
   "message.goety_revenant.no_command": "灵魂状态下无法使用指令",

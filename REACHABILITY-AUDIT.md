@@ -161,9 +161,36 @@
 | 4 | **`BloodVesselBlock`** | **20 行纯空类** | ✅ 要求过「**用血管连接每一个基座**」 |
 | 5 | **`FleshRitual.getRequirement`** | 直接 `return true`，**没有多方块判定** | ✅ 要求过「祭坛 + 基座……多方块」 |
 | 6 | **`FleshProgress.advance` 等** | **无人调用** → 血肉线只能靠指令推进 | ✅ 要求过「血肉晋升线」 |
-| 7 | `SOUL_WARD` 状态效果 | 定义了，**无人施加** | ❓ 待你定（该做 / 已取代） |
+| 7 | ~~`SOUL_WARD` 状态效果~~ | ✅ **已删除**（2026-10-13，用户要求）—— 见下 | — |
 | 8 | `broadcastSoulAppearance` + `SoulAppearanceMessage` | 死代码，**故意不用**（灵魂该完全看不见） | — 建议删或标注弃用 |
 | 9 | `ComboChain.clear` | 死方法（但**超时机制正常**，无害） | — 可删 |
 | 10 | `FleshRitual` / `FleshRites` 用 `OrganType` | **用的是已废的六窍枚举** | — 需改成"枝" |
 
 **⚠️ 第 1~6 条不是"废弃设计"，是用户要求过、但没实现或没接上。**
+
+### SOUL_WARD 删除记录（2026-10-13）
+
+**它是什么**：`ModEffects:20` 的注释写着
+「**魂佑：回魂机制的核心 buff，死亡时消耗层数抵消一次致命伤**」——
+听起来是回魂系统的核心保命机制。
+
+**实际是什么**：`SoulWardEffect.java` **共 12 行，是个空壳**：
+```java
+public class SoulWardEffect extends MobEffect {
+    public SoulWardEffect() {
+        super(MobEffectCategory.BENEFICIAL, 0x7B2FBE);   // 就设了个颜色
+    }
+}
+```
+**没有 `applyEffectTick`、没有 `isDurationEffectTick`、没有任何逻辑** ——
+注释描述的"抵消致命伤"一行都没写。而且**没有任何地方施加这个效果**，
+所以玩家永远拿不到它，注册了也等于不存在。
+
+**已删除**（用户要求）：
+- `common/effect/SoulWardEffect.java`（整个文件）
+- `ModEffects` 的 import + 注册
+- `zh_cn.json` / `en_us.json` 的 `effect.goety_revenant.soul_ward`（"魂佑" / "Soul Ward"）
+
+**（无关的一件好事）**：`MalumWardCompat` 是**另一个东西**且是有效的 ——
+它把 Malum 的灵魂护盾与灵魂能量互相绑定（护盾掉多少扣多少灵魂能，反向同步）。
+那正是用户 2026-09-27 要的「**灵灾的灵魂护盾也可以通过灵魂能量显示**」。

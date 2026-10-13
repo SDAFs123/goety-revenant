@@ -10,7 +10,6 @@
   "item.goety_revenant.revenant_spawn_egg": "Revenant Spawn Egg",
   "entity.goety_revenant.revenant": "Revenant",
   "entity.goety_revenant.corpse": "Corpse",
-  "effect.goety_revenant.soul_ward": "Soul Ward",
   "message.goety_revenant.soul_start": "You died - but your soul lingers. Find your body within 20 minutes: %s next to it to possess it.",
   "message.goety_revenant.soul_hint": "Soul: %sm %ss | Energy %s | Attunement %s%%",
   "message.goety_revenant.no_command": "Commands are disabled while you are a soul",

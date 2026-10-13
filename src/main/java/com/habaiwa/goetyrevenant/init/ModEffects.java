@@ -3,7 +3,6 @@ package com.habaiwa.goetyrevenant.init;
 import com.habaiwa.goetyrevenant.GoetyRevenant;
 import com.habaiwa.goetyrevenant.common.body.OrganType;
 import com.habaiwa.goetyrevenant.common.effect.ElementOverloadEffect;
-import com.habaiwa.goetyrevenant.common.effect.SoulWardEffect;
 import java.util.EnumMap;
 import java.util.Map;
 import net.minecraft.world.effect.MobEffect;
@@ -16,9 +15,6 @@ import net.minecraftforge.registries.RegistryObject;
 public final class ModEffects {
     public static final DeferredRegister<MobEffect> EFFECTS =
             DeferredRegister.create(ForgeRegistries.MOB_EFFECTS, GoetyRevenant.MODID);
-
-    /** 魂佑：回魂机制的核心 buff，死亡时消耗层数抵消一次致命伤。 */
-    public static final RegistryObject<MobEffect> SOUL_WARD = EFFECTS.register("soul_ward", SoulWardEffect::new);
 
     /** 灵魂溃散：灵魂能量被抽干之后的代价（持续掉血 + 抽灵魂能量，但**不触发伤害**）。 */
     public static final RegistryObject<MobEffect> SOUL_COLLAPSE =
