@@ -151,19 +151,6 @@ public class BodyScreen extends Screen {
 
     // ===== 背景与躯壳 =====
 
-    /** 四周压暗的血色暗角。 */
-    private void renderVignette(GuiGraphics graphics) {
-        int band = Math.max(24, this.width / 12);
-        for (int i = 0; i < band; i += 2) {
-            int a = (int) (0x60 * (1.0F - i / (float) band));
-            int color = (a << 24) | 0x400000;
-            graphics.fill(i, 0, i + 2, this.height, color);
-            graphics.fill(this.width - i - 2, 0, this.width - i, this.height, color);
-            graphics.fill(0, i, this.width, i + 2, color);
-            graphics.fill(0, this.height - i - 2, this.width, this.height - i, color);
-        }
-    }
-
     /** 一块「肉」：底下是黑洞，横向一层层堆出暗红渐变。 */
     private void drawFleshSlab(GuiGraphics graphics, int x0, int y0, int x1, int y1) {
         graphics.fill(x0, y0, x1, y1, VOID);
@@ -176,31 +163,6 @@ public class BodyScreen extends Screen {
             graphics.fill(x0 + 1, y, x1 - 1, y + 1, (0xE0 << 24) | (color & 0xFFFFFF));
         }
         frame(graphics, x0, y0, x1, y1, SCAB);
-    }
-
-    /** 剥皮躯壳：头 / 颈 / 胸 / 双臂 / 双腿。 */
-    private void renderBody(GuiGraphics graphics) {
-        int cx = panelLeft + panelW / 2;
-        int top = panelTop;
-        int s = Math.max(1, (int) this.scale);
-
-        // 头
-        fillFlesh(graphics, cx - 16 * s, top + 6 * s, cx + 16 * s, top + 38 * s, 0.0F);
-        // 颈
-        fillFlesh(graphics, cx - 6 * s, top + 38 * s, cx + 6 * s, top + 50 * s, 0.3F);
-        // 躯干（上宽下窄）
-        for (int y = 0; y < 84 * s; y++) {
-            float t = y / (84.0F * s);
-            int half = (int) ((34 - 8 * t) * s);
-            graphics.fill(cx - half, top + 48 * s + y, cx + half, top + 48 * s + y + 1,
-                    (0xE0 << 24) | (lerpColor(FLESH_DARK, FLESH, 0.55F - t * 0.25F) & 0xFFFFFF));
-        }
-        // 双臂
-        fillFlesh(graphics, cx - 50 * s, top + 54 * s, cx - 34 * s, top + 120 * s, 0.25F);
-        fillFlesh(graphics, cx + 34 * s, top + 54 * s, cx + 50 * s, top + 120 * s, 0.25F);
-        // 双腿
-        fillFlesh(graphics, cx - 26 * s, top + 130 * s, cx - 5 * s, top + 212 * s, 0.35F);
-        fillFlesh(graphics, cx + 5 * s, top + 130 * s, cx + 26 * s, top + 212 * s, 0.35F);
     }
 
     /** 一块带纵向渐变的血肉。 */
@@ -296,14 +258,6 @@ public class BodyScreen extends Screen {
         this.spanCache[i] = out;
         this.spanCacheR[i] = r;
         return out;
-    }
-
-    /** 缝合线：未开窍的伤口是被"缝上"的。 */
-    private void stitch(GuiGraphics graphics, int cx, int cy, int r) {
-        for (int i = -r; i <= r; i += 5) {
-            graphics.fill(cx - r, cy + i, cx + r, cy + i + 1, STITCH);
-            graphics.fill(cx + i, cy - r, cx + i + 1, cy + r, STITCH);
-        }
     }
 
     /** 往下滴的血。 */

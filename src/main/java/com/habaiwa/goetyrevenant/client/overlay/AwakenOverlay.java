@@ -117,8 +117,4 @@ public final class AwakenOverlay implements IGuiOverlay {
         }
     }
 
-    private static int withAlpha(int color, float alpha) {
-        int a = (int) (Math.max(0.0F, Math.min(1.0F, alpha)) * 255.0F);
-        return (a << 24) | (color & 0xFFFFFF);
-    }
 }

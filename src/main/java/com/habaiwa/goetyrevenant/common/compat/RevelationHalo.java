@@ -78,15 +78,6 @@ public final class RevelationHalo {
     }
 
     @Nullable
-    private static Item item(Tier tier) {
-        if (tier.path == null) {
-            return null;
-        }
-        Item found = BuiltInRegistries.ITEM.get(
-                new ResourceLocation(RevenantCompat.REVELATION, tier.path));
-        return found == Items.AIR ? null : found;
-    }
-
     /**
      * 玩家**戴着**的最高一阶光环。
      *
