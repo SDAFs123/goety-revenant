@@ -88,19 +88,4 @@ public final class ClientEvents {
      * （护甲以外的那些附加层）在这一帧也不会被画 —— 这是替换渲染的固有代价，
      * 所以只对"确实变了样子的玩家"这么做。</p>
      */
-    @SubscribeEvent
-    public static void onRenderPlayer(net.minecraftforge.client.event.RenderPlayerEvent.Pre event) {
-        net.minecraft.world.entity.player.Player rawPlayer = event.getEntity();
-        if (!(rawPlayer instanceof net.minecraft.client.player.AbstractClientPlayer player)) {
-            return;
-        }
-        if (!com.habaiwa.goetyrevenant.client.render.RevenantPlayerRenderer.needsOverride(player)) {
-            return;   // 不需要接管 → 原版自己画
-        }
-        event.setCanceled(true);
-        com.habaiwa.goetyrevenant.client.render.RevenantPlayerRenderer renderer =
-                com.habaiwa.goetyrevenant.client.render.RevenantPlayerRenderer.forPlayer(player);
-        renderer.render(player, player.getYRot(), event.getPartialTick(),
-                event.getPoseStack(), event.getMultiBufferSource(), event.getPackedLight());
-    }
 }
