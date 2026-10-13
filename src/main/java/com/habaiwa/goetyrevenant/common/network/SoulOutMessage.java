@@ -34,7 +34,7 @@ public class SoulOutMessage {
                 player.displayClientMessage(Component.translatable("message.goety_revenant.body_locked"), true);
                 return;
             }
-            com.habaiwa.goetyrevenant.common.soul.Possession.voluntarySoulOut(player);
+            com.habaiwa.goetyrevenant.common.possession.SoulForm.voluntarySoulOut(player);
         });
         context.setPacketHandled(true);
     }

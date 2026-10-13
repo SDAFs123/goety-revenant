@@ -1,5 +1,7 @@
 package com.habaiwa.goetyrevenant.common.soul;
 
+import com.habaiwa.goetyrevenant.common.possession.SoulForm;
+
 import com.Polarice3.Goety.common.capabilities.soulenergy.ISoulEnergy;
 import com.Polarice3.Goety.utils.SEHelper;
 import com.habaiwa.goetyrevenant.common.entity.CorpseEntity;
@@ -24,10 +26,7 @@ import net.minecraft.world.phys.Vec3;
 
 /** 附身、弹出、强制召回灵魂方舟、灵魂能量耗尽后的真死。 */
 public final class Possession {
-    /** 原版「对亡灵特攻」的实体标签 —— 用它兜住模组加的亡灵（未必正确设置 MobType）。 */
-    private static final net.minecraft.tags.TagKey<net.minecraft.world.entity.EntityType<?>> UNDEAD_TAG =
-            net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.ENTITY_TYPE,
-                    new net.minecraft.resources.ResourceLocation("minecraft", "sensitive_to_smite"));
+    // 可附身判定与目标查找在 common/possession/PossessionTarget
 
     /** 被强制召回灵魂方舟时恢复的灵魂能量。 */
     /** 召回时补回的灵魂能量 —— 实际数值读配置「灵魂 / 召回时恢复的灵魂能量」。 */
@@ -36,36 +35,6 @@ public final class Possession {
     private Possession() {
     }
 
-    @Nullable
-    public static Entity findTarget(ServerPlayer soul) {
-        AABB box = soul.getBoundingBox().inflate(com.habaiwa.goetyrevenant.common.config.RevenantConfig.possessRange);
-        List<Entity> list = soul.level().getEntities(soul, box, Possession::isPossessable);
-        return list.isEmpty() ? null : list.get(0);
-    }
-
-    public static boolean isPossessable(Entity entity) {
-        if (entity instanceof CorpseEntity) {
-            return true;
-        }
-        // 标签优先：任何附属把自己的生物写进 goety_revenant:possessable 就能被附身
-        if (entity.getType().is(com.habaiwa.goetyrevenant.init.ModTags.POSSESSABLE)) {
-            return true;
-        }
-        if (entity instanceof Player) {
-            return com.habaiwa.goetyrevenant.common.config.RevenantConfig.possessPlayers;
-        }
-        if (entity instanceof com.habaiwa.goetyrevenant.common.entity.RevenantEntity) {
-            return true;
-        }
-        if (!(entity instanceof LivingEntity living)) {
-            return false;
-        }
-        // 双保险：MobType 判定 + 原版的「对亡灵特攻」标签。
-        // 后者能覆盖模组加的亡灵（僵尸卫道士这类），它们未必正确设置 MobType。
-        // 标签按**注册名**构造，不依赖 EntityTypeTags 里的常量名（那个常量在 1.20.1 里叫别的名字）
-        return living.getMobType() == net.minecraft.world.entity.MobType.UNDEAD
-                || entity.getType().is(UNDEAD_TAG);
-    }
 
     /** 附身。附身他人尸体 = 连人带物品一起继承。 */
     public static void possess(ServerPlayer player, Entity target) {
@@ -154,7 +123,7 @@ public final class Possession {
         living.discard();
         player.teleportTo(pos.x, pos.y, pos.z);
         player.setGameMode(SoulData.getPreviousGameMode(player));
-        exitSoulForm(player);
+        SoulForm.exitSoulForm(player);
 
         // **继承这具身体的体质**（最大生命/攻击/护甲/移速）
         BodyTraits.apply(player, living);
@@ -178,94 +147,8 @@ public final class Possession {
                 Math.round(attunement * 100.0F)), false);
     }
 
-    /**
-     * **主动灵魂出窍** —— 跳过井之后随时可以做的事，不需要任何物品。
-     *
-     * <p>和「死了才变灵魂」走的是同一套状态，只是：
-     * 身体不会死，而是原地留下一具**装着全部家当的尸体**（{@code CorpseEntity.of} 会把背包和装备
-     * 一起搬进尸体并清空玩家背包，所以不会复制东西）。</p>
-     *
-     * @return 是否真的出窍了
-     */
-    public static boolean voluntarySoulOut(ServerPlayer player) {
-        if (SoulData.isSoul(player)) {
-            player.displayClientMessage(Component.translatable("message.goety_revenant.soul_out_already"), true);
-            return false;
-        }
-        if (player.isCreative() || player.isSpectator()) {
-            player.displayClientMessage(Component.translatable("message.goety_revenant.soul_out_creative"), true);
-            return false;
-        }
 
-        ServerLevel level = player.serverLevel();
-        CorpseEntity corpse = CorpseEntity.of(player);   // 这一步会把背包清空
-        level.addFreshEntity(corpse);
 
-        SoulData.setSoul(player, true);
-        // **出窍游离**：和死亡游离最大的区别就是**不登记尸体** ——
-        // 所以 HUD 不会给你指方向，你得自己记住身体放哪儿了。
-        // （走近了照样能左键附身回去，只是回去之后是残破躯体。）
-        SoulData.setSoulMode(player, SoulConstants.MODE_DRIFT);
-        SoulData.setTicks(player, SoulConstants.soulDurationTicks());
-        SoulData.setPreviousGameMode(player, player.gameMode.getGameModeForPlayer());
-        // 注意：**主动**出窍不充能 —— 不然「出窍 → 回身体 → 出窍」就是免费回满灵魂能量。
-        // 只有「死了变灵魂」才会充满（那是一次性的，没有循环）。
-        SoulData.setLastSe(player, SEHelper.getSESouls(player));
-
-        enterSoulForm(player);
-        com.habaiwa.goetyrevenant.common.network.RevenantNetwork.sendSoulState(player);
-        player.displayClientMessage(Component.translatable("message.goety_revenant.soul_out",
-                com.habaiwa.goetyrevenant.common.util.KeyNames.key("key.attack")), false);
-        player.displayClientMessage(Component.translatable("message.goety_revenant.soul_out_body_left"), false);
-        return true;
-    }
-
-    /**
-     * **死亡游离的灵魂落点**。
-     *
-     * <p>两档，都**和床无关**：</p>
-     * <ul>
-     *   <li><b>绑了灵魂方舟</b> → 方舟正上方一格（方舟本来就是死亡回归点）</li>
-     *   <li><b>没绑</b> → <b>世界出生点</b></li>
-     * </ul>
-     *
-     * <p>尸体**不会**跟着走 —— 它留在你倒下的地方，于是「回出生点/方舟」和
-     * 「回去找身体」变成了两件都要跑的事。</p>
-     */
-    public static void spawnSoul(ServerPlayer player) {
-        // 1) 有方舟 → 方舟旁边
-        BlockPos arca = SEHelper.getArcaBlock(player);
-        ResourceKey<Level> dimension = SEHelper.getArcaDimension(player);
-        if (arca != null && dimension != null) {
-            ServerLevel bound = player.server.getLevel(dimension);
-            if (bound != null) {
-                // 站在方舟正上方一格：方舟本身是方块，直接落在里面会卡住
-                player.teleportTo(bound, arca.getX() + 0.5D, arca.getY() + 1.0D, arca.getZ() + 0.5D,
-                        player.getYRot(), player.getXRot());
-                player.displayClientMessage(
-                        Component.translatable("message.goety_revenant.soul_spawn_arca"), false);
-                return;
-            }
-        }
-        // 2) 没方舟 → **世界出生点**（不是床）
-        ServerLevel overworld = player.server.overworld();
-        BlockPos spawn = overworld.getSharedSpawnPos();
-        player.teleportTo(overworld, spawn.getX() + 0.5D, spawn.getY(), spawn.getZ() + 0.5D,
-                player.getYRot(), player.getXRot());
-        player.displayClientMessage(
-                Component.translatable("message.goety_revenant.soul_spawn_world"), false);
-    }
-
-    /**
-     * **清掉床的重生点。**
-     *
-     * <p>回魂体系里床已经不作数了：死亡游离的灵魂去的是灵魂方舟 / 世界出生点，
-     * 真死之后的回归点也该是这两处。不清掉的话，玩家会在「灵魂去了世界出生点」
-     * 和「真死时被拉回床边」之间来回矛盾。</p>
-     */
-    public static void clearBedSpawn(ServerPlayer player) {
-        player.setRespawnPosition(null, null, 0.0F, false, false);
-    }
 
     /** 灵魂能不能自己回去（有身体且在旁边）。 */
     public static boolean canReturnToOwnBody(ServerPlayer player) {
@@ -274,41 +157,7 @@ public final class Possession {
                 <= com.habaiwa.goetyrevenant.common.config.RevenantConfig.possessRange * com.habaiwa.goetyrevenant.common.config.RevenantConfig.possessRange;
     }
 
-    /**
-     * 进入**自研灵魂形态**。
-     *
-     * <p>为什么不用原版旁观者：旁观者**不可被选中、免疫伤害**，
-     * 而需求是「鬼类能看见并攻击灵魂」且「伤害扣灵魂能量」—— 旁观者做不到这两点。</p>
-     *
-     * <p>所以自己实现：穿墙（noPhysics）+ 隐身 + 可飞行。游戏模式保持原样，因此**原版旁观者完全不受影响**。</p>
-     */
-    public static void enterSoulForm(ServerPlayer player) {
-        // 真要出窍了，灵化那个"半魂"状态就先收起来
-        LingHua.forceOff(player);
-        // 灵魂 = **别人完全看不见**（invisible 就够，不渲染）；
-        // 视角 = 旁观者一样：穿墙（noPhysics）+ 悬浮失重（noGravity）+ 自由飞行
-        // **不要 broadcastSoulAppearance** —— 那会让人半透明可见，方向反了
-        player.noPhysics = true;
-        player.setInvisible(true);
-        player.setNoGravity(true);
-        player.getAbilities().mayfly = true;
-        player.getAbilities().flying = true;
-        player.onUpdateAbilities();
-    }
 
-    /** 退出灵魂形态，恢复正常状态。 */
-    public static void exitSoulForm(ServerPlayer player) {
-        // 不是魂了：附身外观撤掉（回自己身体 / 被弹出 / 召回都走这里）
-        com.habaiwa.goetyrevenant.common.network.RevenantNetwork.broadcastPossessAppearance(player, null);
-        player.noPhysics = false;
-        player.setInvisible(false);
-        player.setNoGravity(false);
-        if (!player.isCreative() && !player.isSpectator()) {
-            player.getAbilities().mayfly = false;
-            player.getAbilities().flying = false;
-        }
-        player.onUpdateAbilities();
-    }
 
     /** 契合度耗尽：被从这具身体里弹出去，回到灵魂状态。 */
     public static void eject(ServerPlayer player) {
@@ -317,7 +166,7 @@ public final class Possession {
         BodyTraits.clear(player);
         PossessAbilities.clear(player);
         SoulData.clearPossession(player);
-        enterSoulForm(player);
+        SoulForm.enterSoulForm(player);
         com.habaiwa.goetyrevenant.common.network.RevenantNetwork.sendSoulState(player);
 
         if (self) {
@@ -452,10 +301,10 @@ public final class Possession {
         //    主循环里那一句「不是灵魂就 return」下一 tick 就不会再走到这儿。
         //    注意 setSoul(false) 内部会 clear() 掉 KEY_FINAL，所以标记必须打在它**之后**。
         SoulData.setSoul(player, false);
-        exitSoulForm(player);
+        SoulForm.exitSoulForm(player);
         player.setGameMode(GameType.SURVIVAL);
         // 真死的回归点也是**世界出生点** —— 床在回魂体系里不作数。
-        clearBedSpawn(player);
+        SoulForm.clearBedSpawn(player);
         player.setHealth(1.0F);
 
         // 2) 放行这一次死亡：onLivingDeath 看到这个标记就**不取消、也不再把人变成灵魂**
@@ -495,7 +344,7 @@ public final class Possession {
         // 清两遍是无害的，漏一遍就是"回自己身体后还带着别人的体质"。
         PossessAbilities.clear(player);
         SoulData.setSoul(player, false);
-        exitSoulForm(player);
+        SoulForm.exitSoulForm(player);
         player.setGameMode(previous == null || previous == GameType.SPECTATOR ? GameType.SURVIVAL : previous);
     }
 }

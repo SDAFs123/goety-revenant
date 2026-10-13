@@ -28,7 +28,7 @@ public class PossessRequestMessage {
                 return;
             }
             // 服务端复检：距离/类型都由 findTarget 把关
-            Entity target = Possession.findTarget(player);
+            Entity target = com.habaiwa.goetyrevenant.common.possession.PossessionTarget.find(player);
             if (target != null) {
                 Possession.possess(player, target);
             }

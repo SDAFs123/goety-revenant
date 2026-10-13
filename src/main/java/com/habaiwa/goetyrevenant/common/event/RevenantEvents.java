@@ -104,11 +104,11 @@ public final class RevenantEvents {
         player.setAirSupply(player.getMaxAirSupply());
         // 【自研灵魂形态】不用旁观者 —— 旁观者不可被选中/免疫伤害，
         // 而鬼类要能看见并攻击灵魂、伤害要扣灵魂能量。
-        com.habaiwa.goetyrevenant.common.soul.Possession.enterSoulForm(player);
+        com.habaiwa.goetyrevenant.common.possession.SoulForm.enterSoulForm(player);
         // **灵魂落点**：有灵魂方舟就落在方舟旁，没有就落在**世界出生点**（床不作数）。
         // 尸体留在死的地方，所以「回出生点」和「回去找身体」是两件要跑的事。
-        com.habaiwa.goetyrevenant.common.soul.Possession.clearBedSpawn(player);
-        com.habaiwa.goetyrevenant.common.soul.Possession.spawnSoul(player);
+        com.habaiwa.goetyrevenant.common.possession.SoulForm.clearBedSpawn(player);
+        com.habaiwa.goetyrevenant.common.possession.SoulForm.spawnSoul(player);
         com.habaiwa.goetyrevenant.common.network.RevenantNetwork.sendSoulState(player);
         player.displayClientMessage(Component.translatable("message.goety_revenant.soul_start",
                     com.habaiwa.goetyrevenant.common.util.KeyNames.key("key.sneak")), false);
