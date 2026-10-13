@@ -29,6 +29,10 @@ public class RevenantPlayerRenderer extends PlayerRenderer {
     //  不需要接管的玩家（绝大多数）完全走原版，一点不受影响。
     // ======================================================================
 
+    /** 已经报过"我正在接管渲染"的玩家（避免每帧刷屏）。 */
+    private static final java.util.Set<UUID> renderLogged =
+            java.util.concurrent.ConcurrentHashMap.newKeySet();
+
     /** 从 AddLayers 借来的渲染上下文。 */
     private static EntityRendererProvider.Context context;
 
@@ -41,17 +45,30 @@ public class RevenantPlayerRenderer extends PlayerRenderer {
         context = ctx;
     }
 
-    /** 这个玩家需不需要我们接管渲染。 */
+    private static final org.slf4j.Logger LOG = com.mojang.logging.LogUtils.getLogger();
+
+    /**
+     * 这个玩家需不需要我们接管渲染。
+     *
+     * <p><b>接管 = 取消原版那一帧的渲染</b>，所以判断要非常保守：
+     * 只有在"确实要画成别的东西"的时候才为真。判断错了的表现很严重
+     * （玩家整个不见、或者被画到错的位置）。</p>
+     */
     public static boolean needsOverride(AbstractClientPlayer player) {
         if (context == null || player == null) {
             return false;
         }
-        // ① 附身了生物 → 要画成那个生物
-        if (com.habaiwa.goetyrevenant.client.PossessedAppearance.get(player.getUUID()) != null) {
+        // ① 附身了生物 → 要画成那个生物（这条需要接管，没有别的办法）
+        ResourceLocation possessed =
+                com.habaiwa.goetyrevenant.client.PossessedAppearance.get(player.getUUID());
+        if (possessed != null) {
             return true;
         }
-        // ② 附身了别的玩家 → 要用对方的皮肤
-        return ClientSkinOverride.get(player.getUUID()) != null;
+        // ② 附身了别的玩家 → 理论上要用对方的皮肤。
+        //    **但这条先不接管**：它只是为了换一张纹理，却要把整条原版渲染路径取消掉，
+        //    代价和收益完全不成比例 —— 出问题的方式还特别显眼（人整个不见）。
+        //    先用原版画（皮肤会是玩家自己的），等能把"换纹理"单独做干净再接。
+        return false;
     }
 
     /** 取（或造）对应模型的渲染器实例。 */
@@ -104,6 +121,10 @@ public class RevenantPlayerRenderer extends PlayerRenderer {
             if (mob != null) {
                 {
                     syncFromPlayer(mob, entity);
+                    if (renderLogged.add(entity.getUUID())) {
+                        LOG.info("[回魂] 接管玩家渲染：{} 画成 {}（代理 {}）",
+                                entity.getName().getString(), id, mob.getType());
+                    }
                     net.minecraft.client.renderer.entity.EntityRenderer<?> er =
                             Minecraft.getInstance().getEntityRenderDispatcher().getRenderer(mob);
                     if (er instanceof net.minecraft.client.renderer.entity.LivingEntityRenderer<?, ?> raw) {
