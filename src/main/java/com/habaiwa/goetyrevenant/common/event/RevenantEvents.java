@@ -258,7 +258,7 @@ public final class RevenantEvents {
         int left = SoulData.getTicks(player) - 1;
         SoulData.setTicks(player, left);
         if (left <= 0) {
-            Possession.forceRecall(player);
+            com.habaiwa.goetyrevenant.common.possession.PossessionRecall.forceRecall(player);
             return;
         }
 
@@ -341,7 +341,7 @@ public final class RevenantEvents {
 
         if (energy <= 0) {
             player.displayClientMessage(Component.translatable("message.goety_revenant.soul_energy_gone"), false);
-            Possession.killSoul(player);
+            com.habaiwa.goetyrevenant.common.possession.PossessionRecall.killSoul(player);
         }
     }
 

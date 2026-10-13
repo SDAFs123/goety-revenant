@@ -181,71 +181,7 @@ public final class Possession {
                 Math.round(attunement * 100.0F)), false);
     }
 
-    /**
-     * 20 分钟到 / 灵魂能量耗尽前的兜底召回：
-     * 绑定了灵魂方舟就回方舟（并恢复灵魂能量），没绑定就出现在出生点（无法补充）。
-     * 尸体一并召回，免得玩家复活后还得走回去。
-     */
-    public static void forceRecall(ServerPlayer player) {
-        MinecraftServer server = player.server;
-        BlockPos arca = SEHelper.getArcaBlock(player);
-        ResourceKey<Level> dimension = SEHelper.getArcaDimension(player);
-        ServerLevel bound = dimension == null ? null : server.getLevel(dimension);
 
-        ServerLevel destination;
-        double x;
-        double y;
-        double z;
-        boolean hasArca = arca != null && bound != null;
-
-        if (hasArca) {
-            destination = bound;
-            x = arca.getX() + 0.5D;
-            y = arca.getY() + 1.0D;
-            z = arca.getZ() + 0.5D;
-        } else {
-            destination = server.overworld();
-            BlockPos spawn = destination.getSharedSpawnPos();
-            x = spawn.getX() + 0.5D;
-            y = spawn.getY();
-            z = spawn.getZ() + 0.5D;
-        }
-
-        player.teleportTo(destination, x, y, z, player.getYRot(), player.getXRot());
-        recallCorpse(player, destination, x, y, z);
-
-        if (hasArca) {
-            ISoulEnergy energy = SEHelper.getCapability(player);
-            if (energy != null) {
-                energy.increaseSE(Math.max(0, com.habaiwa.goetyrevenant.common.config.RevenantConfig.recallRestore));
-            }
-        }
-
-        // 被强行拽回来一次，灵魂和自己的本体就更疏远一分
-        SoulData.penalizeSelfAttunement(player, SoulConstants.PENALTY_ON_RECALL);
-
-        endSoul(player);
-        player.displayClientMessage(Component.translatable(hasArca
-                ? "message.goety_revenant.forced_recall"
-                : "message.goety_revenant.forced_recall_spawn",
-                Math.round(SoulData.getSelfAttunement(player) * 100.0F)), false);
-    }
-
-    /** 把玩家的尸体一起搬到目的地。 */
-    private static void recallCorpse(ServerPlayer player, ServerLevel destination, double x, double y, double z) {
-        CorpseEntity corpse = findCorpse(player);
-        if (corpse == null) {
-            return;
-        }
-        if (corpse.level() == destination) {
-            corpse.teleportTo(x, y, z);
-        } else {
-            Entity moved = corpse.changeDimension(destination);
-            if (moved != null) {
-                moved.teleportTo(x, y, z);
-            }
-        }
-    }
 
     @Nullable
     public static CorpseEntity findCorpse(ServerPlayer player) {
@@ -282,40 +218,6 @@ public final class Possession {
         return null;
     }
 
-    /**
-     * 灵魂能量耗尽：这次是真的死了，一无所有地重生。
-     *
-     * <p><b>这里曾经把服务器搞崩过，所以顺序很讲究。</b> 原来的写法是
-     * 「打标记 → 扣血杀人」，可如果**这次死亡被别的模组挡下来了**
-     * （整合包里有一堆死亡保护：神秘遗物、各种图腾……），
-     * 玩家的灵魂状态还在、能量还是 0 —— 于是**下一 tick 又进来杀一次**，
-     * 每 tick 循环，聊天栏一秒刷十几条。循环到某一次抛异常时，
-     * Forge 的 EventBus.handleException 会去打日志，而这个包的 log4j 类加载器是坏的
-     * （LinkageError: MessageSupplier），**打日志这一步直接把游戏崩掉**。</p>
-     *
-     * <p>现在：<b>先脱离灵魂状态</b>（这样下一 tick 的 isSoul 检查就把它挡在门外了），
-     * 再用一个只活一次、SoulData.clear 不会碰的标记放行这次死亡。</p>
-     */
-    public static void killSoul(ServerPlayer player) {
-        // 1) 先脱离灵魂状态 —— 这是**防重入的关键**：
-        //    主循环里那一句「不是灵魂就 return」下一 tick 就不会再走到这儿。
-        //    注意 setSoul(false) 内部会 clear() 掉 KEY_FINAL，所以标记必须打在它**之后**。
-        SoulData.setSoul(player, false);
-        SoulForm.exitSoulForm(player);
-        player.setGameMode(GameType.SURVIVAL);
-        // 真死的回归点也是**世界出生点** —— 床在回魂体系里不作数。
-        SoulForm.clearBedSpawn(player);
-        player.setHealth(1.0F);
-
-        // 2) 放行这一次死亡：onLivingDeath 看到这个标记就**不取消、也不再把人变成灵魂**
-        player.getPersistentData().putBoolean(SoulConstants.KEY_FINAL, true);
-        try {
-            player.hurt(player.damageSources().genericKill(), Float.MAX_VALUE);
-        } finally {
-            // hurt 是同步的，死亡事件在它里面就处理完了
-            player.getPersistentData().remove(SoulConstants.KEY_FINAL);
-        }
-    }
 
     /** 结束灵魂状态，回到原本的游戏模式。 */
     public static void endSoul(ServerPlayer player) {
