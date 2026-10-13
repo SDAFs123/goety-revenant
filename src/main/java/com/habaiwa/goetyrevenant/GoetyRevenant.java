@@ -50,7 +50,8 @@ public class GoetyRevenant {
         // 血肉仪式：我们自己的仪式种类（挂在本体的仪式系统上）
         com.habaiwa.goetyrevenant.common.ritual.FleshRitual.register();
 
-        MinecraftForge.EVENT_BUS.register(RevenantEvents.class);
+        // RevenantEvents 用 @Mod.EventBusSubscriber 自动注册 —— 这里不要再手动注册，
+        // 否则每个处理器会被调用两次（附身倒计时走双倍、受伤扣双倍灵魂能量）。
         MinecraftForge.EVENT_BUS.register(com.habaiwa.goetyrevenant.common.compat.MalumCompat.class);
         MinecraftForge.EVENT_BUS.register(com.habaiwa.goetyrevenant.common.compat.MalumWardCompat.class);
         MinecraftForge.EVENT_BUS.register(com.habaiwa.goetyrevenant.common.compat.WeepingWellUnlock.class);
@@ -64,6 +65,7 @@ public class GoetyRevenant {
         // 神识 —— 修仙者那种感知，不用看也知道周围什么情况
         MinecraftForge.EVENT_BUS.register(com.habaiwa.goetyrevenant.common.body.ShenShi.class);
         // 所有聚晶的 tooltip（被动 + 归属窍）
+        // 注意：这个类【没有】类级注解，必须在这里手动注册 —— 别再加注解，那会注册两次。
         MinecraftForge.EVENT_BUS.register(com.habaiwa.goetyrevenant.common.FocusTooltip.class);
         // 给启示录的光环加上我们的内容（零侵入，走 ItemTooltipEvent）
         MinecraftForge.EVENT_BUS.register(com.habaiwa.goetyrevenant.common.RevelationHaloTooltip.class);
