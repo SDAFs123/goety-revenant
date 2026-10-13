@@ -107,19 +107,17 @@ public final class SoulClientEvents {
      * <p>用 {@code RenderGuiOverlayEvent.Pre} 取消绘制：本体是用
      * {@code RegisterGuiOverlaysEvent} 注册的，注册之后没法注销，只能在这一层拦。</p>
      */
-    @SubscribeEvent
-    public static void onOverlayPre(RenderGuiOverlayEvent.Pre event) {
-        ResourceLocation id = event.getOverlay().id();
-        if (!id.getNamespace().equals("goety") || !id.getPath().contains("soul")) {
-            return;
-        }
-        // **只在灵魂状态下藏掉本体那条**（设计 §1284：我们那条也只在灵魂状态画）。
-        //
-        // 这里原本还挂了一个 `|| BodyClientState.unlocked()` —— 那是**七窍系统**的
-        // "跳哭泣之井解锁"（§391），和 HUD 无关，是我加的。后果是活人解锁之后
-        // 本体条被藏、我们那条又不画（灵魂状态之外都不画），等于把能量条弄没了。
-        if (ClientSoulState.isSoul()) {
-            event.setCanceled(true);
-        }
-    }
+    // ----------------------------------------------------------------------
+    //  **不要藏本体的灵魂能量条。**
+    //
+    //  这里原本有一个 onOverlayPre，会在灵魂状态（以及"已解锁"时）取消
+    //  goety:soul_energy_hud 的绘制，想让 SoulHudOverlay 自己画一条。
+    //
+    //  那是多余的：§9.7 已经把灵魂能量和本体那一份**合成同一个池子**
+    //  （SoulData.getEnergy → SEHelper.getSESouls），
+    //  所以本体那条显示的【就是】灵魂能量，本来就不需要替换。
+    //  （当初藏它的理由"那条画的是身体里的能量"是 §9.7 之前的旧结论。）
+    //
+    //  用户的原话：「我需要的是你们对原本的诡厄巫法灵魂条动没，没让你加新的」。
+    // ----------------------------------------------------------------------
 }

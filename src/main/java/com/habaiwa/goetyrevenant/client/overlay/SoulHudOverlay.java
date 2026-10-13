@@ -35,15 +35,18 @@ import net.minecraftforge.client.gui.overlay.IGuiOverlay;
  *   <li><b>紫色方块</b> —— 身体在**另一个维度**：没有方向可言，只告诉你「在那边」</li>
  * </ul>
  *
- * <p>整块 HUD 只在**自己是灵魂**时才画 —— 别人看不到你的指针，你也看不到别人的。</p>
+ * <p>只在**自己是灵魂**时才画 —— 别人看不到你的指针，你也看不到别人的。</p>
+ *
+ * <h3>这里只画箭头，不画能量条</h3>
+ * <p>能量条本身用<b>本体（诡厄巫法）那条</b>（{@code goety:soul_energy_hud}）。
+ * §9.7 之后灵魂能量已经和本体那一份合成同一个池子
+ * （{@code SoulData.getEnergy → SEHelper.getSESouls}），
+ * 本体 HUD 显示的**就是**灵魂能量 —— 换掉它没有意义。</p>
+ *
+ * <p>（这里曾经自己画过一条、还去拦本体的绘制。用户原话：
+ * 「我需要的是你们对原本的诡厄巫法灵魂条动没，没让你加新的」。）</p>
  */
 public class SoulHudOverlay implements IGuiOverlay {
-    /** 本体（诡厄巫法）的能量条贴图，直接复用，外观才连得上。 */
-    private static final ResourceLocation BAR_TEXTURE =
-            new ResourceLocation("goety", "textures/gui/soul_energy_bar.png");
-    private static final int TEX_WIDTH = 234;
-    private static final int TEX_HEIGHT = 5;
-
     private static final int BAR_WIDTH = 182;
     private static final int BAR_HEIGHT = 5;
     /** 距右边缘 / 底边的留白。 */
@@ -53,76 +56,29 @@ public class SoulHudOverlay implements IGuiOverlay {
     private static final int NEEDLE_OFFSET = 26;
     private static final int NEEDLE_LENGTH = 11;
 
-    private static final int COLOR_BACKDROP = 0x90100818;
     private static final int COLOR_OTHER_DIM = 0xFF9B6BE0;
 
+    /**
+     * **只画那根"指向身体的箭头"** —— 能量条本身用本体（诡厄巫法）那条。
+     *
+     * <p>为什么不再自画一条：§9.7 之后灵魂能量就是本体那一份
+     * （{@code SoulData.getEnergy → SEHelper.getSESouls}），
+     * 本体 HUD 显示的**正是**灵魂能量 —— 换掉它没有意义，只多一层需要维护的绘制。</p>
+     */
     @Override
     public void render(ForgeGui gui, GuiGraphics graphics, float partialTick, int width, int height) {
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.player == null || minecraft.options.hideGui) {
             return;
         }
-        // ------------------------------------------------------------------
-        //  **灵魂状态下无论如何都要画** —— 那条能量就是灵魂的血。
-        //
-        //  解锁之后再扩展到"活人也画"（它要随灵魂温度变色，本体那张固定贴图做不到）。
-        //  之前只有一个 unlocked 条件，于是没跳井的玩家变成灵魂后看不到能量条 ——
-        //  而灵魂状态恰恰是最需要看它的时候（那就是唯一的血条）。
-        // ------------------------------------------------------------------
-        // ------------------------------------------------------------------
-        //  **只在灵魂状态下画这条能量条**（设计 §1284 原文：
-        //  「整块 HUD 只在 ClientSoulState.isSoul() 时画 —— 而那个标记是
-        //    服务端单独发给你自己的」）。
-        //
-        //  这里踩过一次坑：条件原本写的是 if (!unlocked) return;
-        //  —— `unlocked` 是**七窍系统**的"跳哭泣之井解锁"（§391），和 HUD 无关。
-        //  后果是：灵魂状态 + 没跳井 → `SoulClientEvents` 把本体那条藏掉了、
-        //  我们这边又不画 → 右下角**什么都看不到**，而那条能量正是灵魂唯一的血。
-        //
-        //  （另：附身时会挨打扣灵魂能量，但设计没说附身时画不画。
-        //    这一版先严格按设计走 —— 只在灵魂状态画。）
-        // ------------------------------------------------------------------
+        // 只有在灵魂状态下才有"身体在哪"这件事要说
         if (!ClientSoulState.isSoul()) {
             return;
         }
-
+        // 箭头画在本体能量条上方的同一位置（坐标对齐那个条，别让它跑偏）
         int x = width - BAR_WIDTH - MARGIN_RIGHT;
         int y = height - MARGIN_BOTTOM;
-
-        // 指向身体的指针（这个类只在灵魂状态下会被调用）
         renderNeedle(graphics, minecraft, x + BAR_WIDTH / 2, y - NEEDLE_OFFSET);
-        renderEnergy(graphics, x, y);
-    }
-
-    /**
-     * 主能量条：用本体的贴图，按比例裁切（和本体一样的画法）。
-     *
-     * <p>分母是服务端算好的**真实上限**（基础量 + 图腾 / 灵魂方舟），
-     * 所以戴了图腾、绑了方舟之后条会变得「更长」—— 这正是本体那套算法。</p>
-     */
-    private void renderEnergy(GuiGraphics graphics, int x, int y) {
-        int energy = ClientSoulState.energy();
-        float ratio = Math.max(0.0F, Math.min(1.0F, energy / (float) ClientSoulState.energyMax()));
-        int fill = Math.round(BAR_WIDTH * ratio);
-
-        // 底衬：不然在亮背景（雪地/天空）上看不清
-        graphics.fill(x - 2, y - 2, x + BAR_WIDTH + 2, y + BAR_HEIGHT + 2, COLOR_BACKDROP);
-
-        // **条的颜色 = 灵魂温度**：低温偏蓝、温是本色、高温偏橙红。
-        // 温度不单独占一块 UI，它长在这条能量条上。
-        int temp = com.habaiwa.goetyrevenant.common.config.RevenantConfig.hudTemperature
-                ? com.habaiwa.goetyrevenant.client.BodyClientState.temperature()
-                : 50;   // 关掉开关 = 按"温"算 = 贴图本色
-        float[] tint = tintOf(temp);
-        graphics.setColor(tint[0], tint[1], tint[2], 1.0F);
-        try {
-            graphics.blit(BAR_TEXTURE, x, y, 0.0F, 0.0F, BAR_WIDTH, BAR_HEIGHT, TEX_WIDTH, TEX_HEIGHT);
-            if (fill > 0) {
-                graphics.blit(BAR_TEXTURE, x, y, 0.0F, 0.0F, fill, BAR_HEIGHT, TEX_WIDTH, TEX_HEIGHT);
-            }
-        } finally {
-            graphics.setColor(1.0F, 1.0F, 1.0F, 1.0F);
-        }
     }
 
     /**
