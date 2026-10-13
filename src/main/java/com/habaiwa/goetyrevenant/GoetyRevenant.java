@@ -37,6 +37,7 @@ public class GoetyRevenant {
         }
 
         ModItems.register(modBus);
+        com.habaiwa.goetyrevenant.init.ModEnchantments.register(modBus);
         com.habaiwa.goetyrevenant.init.ModBlocks.register(modBus);
         ModEffects.register(modBus);
         ModEntities.register(modBus);

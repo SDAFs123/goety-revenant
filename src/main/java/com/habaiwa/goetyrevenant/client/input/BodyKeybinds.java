@@ -120,6 +120,16 @@ public final class BodyKeybinds {
                             new com.habaiwa.goetyrevenant.common.network.QuizLeaveMessage());
                 }
             }
+            // **快捷键轮换当前槽的方向** ——
+            // 用户 2026-10-10：「同样的被动效果一个个调很麻烦，
+            // 增加快捷键可以切换当前序列的选项」。
+            // 发 index = -1，服务端会去读"当前选中的槽"（界面里点过的那个）。
+            while (UPGRADE_CYCLE.consumeClick()) {
+                if (Minecraft.getInstance().player != null) {
+                    RevenantNetwork.CHANNEL.sendToServer(
+                            new com.habaiwa.goetyrevenant.common.network.UpgradeMessage(-1, 0));
+                }
+            }
             while (OPEN_BODY.consumeClick()) {
                 if (Minecraft.getInstance().player == null) {
                     continue;

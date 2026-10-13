@@ -33,7 +33,7 @@ public final class MalumCompat {
     /** 装了本模组后，灵魂能量获取的常态加成。 */
     public static final float SOUL_GAIN_BONUS = 1.20F;
     /** 聚魂护符的额外加成。 */
-    public static final float CHARM_BONUS = 1.05F;
+    // CHARM_BONUS 删了 —— 聚魂护符的加成改成读附魔等级（charmBonus）
 
     private MalumCompat() {
     }
@@ -98,9 +98,8 @@ public final class MalumCompat {
         // 装了本模组的常态加成 +20%
         souls = Math.round(souls * SOUL_GAIN_BONUS);
         // 聚魂护符再 +5%
-        if (hasCharmCached(player)) {
-            souls = Math.round(souls * CHARM_BONUS);
-        }
+        // 主手武器上的「聚魂护符」附魔（I 级 +5% / II 级 +10%）
+        souls = Math.round(souls * charmBonus(player));
         SEHelper.increaseSESouls(player, souls);
     }
 
@@ -128,53 +127,37 @@ public final class MalumCompat {
      * 就是这么漏的（见过的每个 UUID 都永远留在里面）。换成世界时钟以后，
      * 一次遍历就能把所有过期的条目扫掉。</p>
      */
-    private record CharmCacheEntry(boolean has, long at) {
+    /**
+     * **聚魂护符的加成倍率**（读**主手武器上的附魔等级**）。
+     *
+     * <p>用户 2026-09-27：「聚魂护符修改为增加获取灵魂能量的护符，增加 5%，
+     * 适用物品：#malum:soul_hunter_weapon，最大等级：II」。</p>
+     *
+     * <p>⚠️ 它是个**附魔**，不是一个叫"聚魂护符"的饰品 ——
+     * 之前 `hasCharmCached` 检查的是背包里有没有 `SOUL_HARVEST_CHARM` 这个物品，
+     * 而那个物品根本没有效果（规格里的"适用物品/最大等级/概述"都是附魔的词）。</p>
+     *
+     * @return 1.0 = 无加成；1.05 = I 级；1.10 = II 级
+     */
+    public static float charmBonus(ServerPlayer player) {
+        net.minecraft.world.item.enchantment.Enchantment e =
+                com.habaiwa.goetyrevenant.init.ModEnchantments.SOUL_HARVEST_CHARM.get();
+        if (e == null) {
+            return 1.0F;
+        }
+        return com.habaiwa.goetyrevenant.common.enchant.SoulHarvestCharmEnchantment
+                .bonusOf(player.getMainHandItem(), e);
     }
 
-    private static final java.util.Map<java.util.UUID, CharmCacheEntry> CHARM_CACHE = new java.util.HashMap<>();
-    private static final int CACHE_TICKS = 40;
-    /** 缓存条目超过这个数才触发清理（平时零开销）。 */
-    private static final int CACHE_PRUNE_THRESHOLD = 128;
+    /**
+     * 旧版这里是「背包里有没有 SOUL_HARVEST_CHARM 那个物品」的检查 + 40 tick 缓存。
+     *
+     * <p>已删除 —— 用户 2026-09-27 的规格里，「聚魂护符」是一个**附魔**
+     * （有"适用物品 / 最大等级 / 概述"），不是一个饰品。
+     * 加成现在直接由 {@link #charmBonus(net.minecraft.server.level.ServerPlayer)}
+     * 读主手武器的附魔等级得到，不需要缓存也不需要遍历背包。</p>
+     */
 
-    /** 每 2 秒才真正查一次背包/Curios，其余时候读缓存。 */
-    public static boolean hasCharmCached(ServerPlayer player) {
-        long now = player.level().getGameTime();
-        CharmCacheEntry cached = CHARM_CACHE.get(player.getUUID());
-        if (cached != null && now - cached.at() <= CACHE_TICKS) {
-            return cached.has();
-        }
-        boolean has = hasCharm(player);
-        if (CHARM_CACHE.size() > CACHE_PRUNE_THRESHOLD) {
-            // 长期没被问到的玩家（已退出/跑远了）直接扔掉，下次问到再查一次就好
-            CHARM_CACHE.values().removeIf(entry -> now - entry.at() > CACHE_TICKS * 20L);
-        }
-        CHARM_CACHE.put(player.getUUID(), new CharmCacheEntry(has, now));
-        return has;
-    }
-
-    /** 聚魂护符：Curios 护符槽里装着，或者带在背包 / 副手。 */
-    public static boolean hasCharm(ServerPlayer player) {
-        ItemStack charm = new ItemStack(ModItems.SOUL_HARVEST_CHARM.get());
-        for (ItemStack stack : player.getInventory().items) {
-            if (ItemStack.isSameItem(stack, charm)) {
-                return true;
-            }
-        }
-        for (ItemStack stack : player.getInventory().offhand) {
-            if (ItemStack.isSameItem(stack, charm)) {
-                return true;
-            }
-        }
-        try {
-            return CuriosApi.getCuriosInventory(player)
-                    .map(handler -> handler.findFirstCurio(ModItems.SOUL_HARVEST_CHARM.get()).isPresent())
-                    .orElse(false);
-        } catch (Throwable ignored) {
-            return false;
-        }
-    }
-
-    /** Malum 缺席时也无所谓，这个方法只用来给别处判断。 */
     public static boolean spiritExists(String name) {
         return loaded() && BuiltInRegistries.ITEM.get(new ResourceLocation(MALUM, name)) != Items.AIR;
     }

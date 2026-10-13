@@ -34,9 +34,30 @@ public class UpgradeMessage {
             if (player == null) {
                 return;
             }
+            // index < 0 = 「轮换当前选中槽的方向」（快捷键走这条）
+            if (this.index < 0) {
+                UpgradeType.Type now;
+                try {
+                    now = UpgradeSlots.cycle(player);
+                } catch (Throwable t) {
+                    return;
+                }
+                if (now == null && UpgradeSlots.cooldown(player) > 0) {
+                    player.displayClientMessage(Component.translatable(
+                            "message.goety_revenant.upgrade_cooldown",
+                            (UpgradeSlots.cooldown(player) + 19) / 20), true);
+                } else {
+                    player.displayClientMessage(Component.translatable("message.goety_revenant.upgrade_set",
+                            now == null ? "空" : now.cn()), true);
+                }
+                RevenantNetwork.sendBodyState(player);
+                return;
+            }
             UpgradeType.Type[] options = UpgradeSlots.candidates(this.index);
             UpgradeType.Type target = this.type <= 0 || this.type > options.length
                     ? null : options[this.type - 1];
+            // 玩家在界面里操作过的这个槽 → 成为"当前槽"，快捷键就轮到它
+            UpgradeSlots.setSelected(player, this.index);
             if (UpgradeSlots.set(player, this.index, target)) {
                 player.displayClientMessage(Component.translatable("message.goety_revenant.upgrade_set",
                         target == null ? "空" : target.cn()), true);

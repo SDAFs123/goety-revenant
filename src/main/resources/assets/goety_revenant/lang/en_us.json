@@ -152,14 +152,12 @@
   "hud.goety_revenant.soul": "Soul | %s left | Attunement %s%%",
   "hud.goety_revenant.possessing": "Possessing | %s left | Attunement %s%%",
   "hud.goety_revenant.energy": "Soul Energy %s / %s",
-
   "element.goety_revenant.fire": "Fire",
   "element.goety_revenant.wood": "Wood",
   "element.goety_revenant.earth": "Earth",
   "element.goety_revenant.metal": "Metal",
   "element.goety_revenant.water": "Water",
   "element.goety_revenant.spirit": "Spirit",
-
   "item.goety_revenant.fire_brew": "Opening Brew - Fire",
   "item.goety_revenant.wood_brew": "Opening Brew - Wood",
   "item.goety_revenant.earth_brew": "Opening Brew - Earth",
@@ -169,29 +167,24 @@
   "item.goety_revenant.opening_brew.desc": "The brew that opens %s.",
   "item.goety_revenant.opening_brew.overload": "Drinking it ignites %s Overload - %s, and holding that for 3 seconds clears it and opens the orifice.",
   "item.goety_revenant.opening_brew.hint": "Brewed in the Witch's Cauldron through Goety's brewing process.",
-
   "effect.goety_revenant.soul_collapse": "Soul Collapse",
   "message.goety_revenant.soul_collapse": "Your soul energy is drained dry - your spirit is collapsing",
   "message.goety_revenant.soul_collapse_end": "The collapse stops - you are down to your last breath, and %s soul energy is gone",
-
   "effect.goety_revenant.fire_overload": "Elemental Overload: Fire (enter water)",
   "effect.goety_revenant.wood_overload": "Elemental Overload: Wood (hold an axe)",
   "effect.goety_revenant.earth_overload": "Elemental Overload: Earth (enter a forest)",
   "effect.goety_revenant.metal_overload": "Elemental Overload: Metal (set yourself on fire)",
   "effect.goety_revenant.water_overload": "Elemental Overload: Water (bury yourself in soil)",
   "effect.goety_revenant.spirit_overload": "Elemental Overload: Spirit (jump into the Weeping Well)",
-
   "counter.goety_revenant.fire": "jump into water",
   "counter.goety_revenant.wood": "hold an axe",
   "counter.goety_revenant.earth": "walk into a forest (logs or leaves nearby)",
   "counter.goety_revenant.metal": "set yourself on fire (or stand in lava)",
   "counter.goety_revenant.water": "bury yourself in soil (stand on dirt or sand with no sky above)",
   "counter.goety_revenant.spirit": "soak in the Weeping Well until it spits you out",
-
   "message.goety_revenant.overload_start": "Elemental Overload: %s - %s, and hold that for 3 seconds",
   "message.goety_revenant.overload_interrupted": "The counter was interrupted - %s",
   "message.goety_revenant.brew_already_open": "%s is already open, no need to drink this",
-
   "passive.goety_revenant.mobility": "Mobility",
   "passive.goety_revenant.survival": "Survival",
   "passive.goety_revenant.combat": "Combat",
@@ -201,13 +194,11 @@
   "passive.goety_revenant.steadfast": "Steadfast",
   "passive.goety_revenant.swift": "Swiftness",
   "passive.goety_revenant.fortune": "Fortune",
-
   "tooltip.goety_revenant.focus.header": "Embedded in %s - %s x%s",
   "tooltip.goety_revenant.focus.line": "  - %s %s",
   "tooltip.goety_revenant.focus.twisted": "(elemental twist)",
   "tooltip.goety_revenant.focus.own": "(innate)",
   "tooltip.goety_revenant.focus.need_brew": "Requires drinking %s first",
-
   "tooltip.goety_revenant.halo.hint": "Press [SHIFT] to see the godhood you hold",
   "tooltip.goety_revenant.halo.header": "Revenant - Godhood",
   "tooltip.goety_revenant.halo.orifices": "Orifices opened: %s / %s",
@@ -215,17 +206,14 @@
   "tooltip.goety_revenant.halo.broken": "\"The ring is broken, but the divinity is not - it still remembers what it was.\"",
   "tooltip.goety_revenant.halo.ascension": "\"Life has been elevated; the soul must take its place.\"",
   "tooltip.goety_revenant.halo.end": "\"The end has come. You no longer need a body.\"",
-
   "tier.goety_revenant.1": "Common",
   "tier.goety_revenant.2": "Uncommon",
   "tier.goety_revenant.3": "Rare",
   "tier.goety_revenant.4": "Epic",
   "tier.goety_revenant.5": "Legendary",
-
   "message.goety_revenant.slot_opened": "%s has opened - you can embed a focus there now",
   "message.goety_revenant.embed_failed": "Embedding failed - not enough soul energy. Your focus was NOT consumed",
   "message.goety_revenant.embed_focus_missing": "Embedding interrupted - the focus for %s is no longer in that slot (focus not consumed)",
-
   "screen.goety_revenant.body.soul_energy": "Soul Energy %s",
   "screen.goety_revenant.body.need_brew": "Not opened - drink %s",
   "screen.goety_revenant.body.cost": "Costs %s soul energy",
@@ -235,7 +223,6 @@
   "screen.goety_revenant.body.goes_to": "Goes to: %s",
   "screen.goety_revenant.body.no_organ": "No matching orifice (is this a focus?)",
   "screen.goety_revenant.body.brewing": "Embedding...",
-
   "screen.goety_revenant.converter.picked": "Selected",
   "screen.goety_revenant.converter.click_pick": "Click to make this the starting spirit",
   "screen.goety_revenant.converter.count_hint": "(scroll or drag to adjust)",
@@ -245,7 +232,6 @@
   "screen.goety_revenant.converter.hint_no_cage": "No cursed cage below - place one directly under the converter",
   "screen.goety_revenant.converter.hint_low": "%s more soul energy needed for one round",
   "screen.goety_revenant.converter.hint_ok": "Running - %s spirits per round",
-
   "block.goety_revenant.flesh_altar": "Flesh Altar",
   "block.goety_revenant.flesh_altar.desc": "The altar of the flesh rites. A Flesh Cage must sit directly beneath it, holding a soul totem.",
   "block.goety_revenant.flesh_cage": "Flesh Cage",
@@ -269,5 +255,6 @@
   "message.goety_revenant.ritual_vessel_broken": "A Devour Pedestal is not linked by blood vessels - run one from the altar",
   "message.goety_revenant.ritual_no_focus": "A focus must be placed on the altar",
   "message.goety_revenant.ritual_devoured": "Flesh Rite - Devour: %s was swallowed into %s",
-  "message.goety_revenant.ritual_sacrificed": "Flesh Rite - Sacrifice: the five viscera are given up, and %s focus(es) vanish with them"
+  "message.goety_revenant.ritual_sacrificed": "Flesh Rite - Sacrifice: the five viscera are given up, and %s focus(es) vanish with them",
+  "message.goety_revenant.ritual_need_vessels": "Every pedestal must be linked by blood vessels"
 }

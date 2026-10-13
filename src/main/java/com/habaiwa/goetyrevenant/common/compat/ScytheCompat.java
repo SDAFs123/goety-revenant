@@ -34,7 +34,14 @@ public final class ScytheCompat {
     /** 镰刀每次命中给的灵魂能量（应与 goety-item.toml 的 darkScytheSouls 一致）。 */
     public static final int SOULS_PER_HIT = 5;
     /** 连锁破坏的水平半径。 */
-    public static final int CHAIN_RADIUS = 1;
+    /**
+     * **连锁破坏的尺寸** —— 用户 2026-09-27 的原话（引自 Goety 镰刀说明）：
+     * 「当打破其中的一个方块时，它会打破周围 **2x1x2** 区域内的所有其他可开采方块」。
+     *
+     * <p>不是 3x3 的九宫格，而是**沿玩家朝向 2 格 × 垂直朝向 2 格 × 高 1 层**的 4 格。</p>
+     */
+    public static final int CHAIN_LEN = 2;
+    public static final int CHAIN_WIDE = 2;
 
     /** 防递归：连锁破坏时自己触发的 BreakEvent 不再连锁。 */
     private static boolean cascading;
@@ -67,6 +74,29 @@ public final class ScytheCompat {
     }
 
     /** 是不是 Malum 自己的镰刀（它内部已经乘过熟练度，别再乘一次）。 */
+    /**
+     * **不祥镰刀**（{@code goetyominous} 附属的镰刀）。
+     *
+     * <p>用户 2026-09-27 引的说明：「**不祥镰刀可以在没有精准采集附魔的情况下采集幽匿块**。
+     * 抢夺和时运附魔在不祥镰刀上时会和精准采集冲突。」</p>
+     *
+     * <p>反编译该附属得到的注册名是 {@code goetyominous:wither_scythe}；这里放宽成
+     * "命名空间是 goetyominous 且路径含 scythe"，免得他们改 id 就失效。</p>
+     */
+    public static boolean isOminousScythe(ItemStack stack) {
+        if (stack.isEmpty()) {
+            return false;
+        }
+        ResourceLocation key = BuiltInRegistries.ITEM.getKey(stack.getItem());
+        return key.getNamespace().equals("goetyominous") && key.getPath().contains("scythe");
+    }
+
+    /** 幽匿系列方块（它的掉落受精准采集影响）。 */
+    private static boolean isSculk(net.minecraft.world.level.block.state.BlockState state) {
+        ResourceLocation key = BuiltInRegistries.BLOCK.getKey(state.getBlock());
+        return key.getNamespace().equals("minecraft") && key.getPath().startsWith("sculk");
+    }
+
     public static boolean isMalumNative(ItemStack stack) {
         return !stack.isEmpty()
                 && BuiltInRegistries.ITEM.getKey(stack.getItem()).getNamespace().equals(MalumCompat.MALUM);
@@ -153,6 +183,10 @@ public final class ScytheCompat {
         if (player.isSprinting() || !player.onGround()) {
             return;
         }
+        // **戴了精准镰刃 / 隐藏锋刃项链就禁止横扫**（用户 2026-09-27 的规格）
+        if (ScytheTrinkets.hasBladeNecklace(player)) {
+            return;
+        }
         if (player.getAttackStrengthScale(0.5F) < 0.9F) {
             return;
         }
@@ -199,8 +233,8 @@ public final class ScytheCompat {
     /** 统一的灵魂能量结算（L1 与横扫共用）。 */
     private static void grantSouls(ServerPlayer player, ItemStack weapon) {
         int souls = Math.round(SOULS_PER_HIT * (1 + soulEaterLevel(weapon)) * MalumCompat.SOUL_GAIN_BONUS);
-        if (MalumCompat.hasCharmCached(player)) {
-            souls = Math.round(souls * MalumCompat.CHARM_BONUS);
+        if (MalumCompat.charmBonus(player) > 1.0F) {
+            souls = Math.round(souls * MalumCompat.charmBonus(player));
         }
         SEHelper.increaseSESouls(player, souls);
     }
@@ -384,7 +418,35 @@ public final class ScytheCompat {
      * 改用 {@code EnchantmentHelper#isEnchantmentCompatible(Collection, Enchantment)}，
      * 它是公开的、内部走同一套冲突规则。</p>
      */
+    /**
+     * **不祥镰刀：抢夺 / 时运 与 精准采集 冲突。**
+     *
+     * <p>用户 2026-09-27 引的说明：「抢夺和时运附魔在**不祥镰刀**上时会和精准采集冲突。」
+     * —— 这是那把镰刀特有的规则，不是全局的。</p>
+     */
+    private static boolean ominousConflict(ItemStack stack, Enchantment candidate) {
+        if (!isOminousScythe(stack)) {
+            return false;
+        }
+        java.util.Set<Enchantment> existing =
+                net.minecraft.world.item.enchantment.EnchantmentHelper.getEnchantments(stack).keySet();
+        boolean hasSilk = existing.contains(net.minecraft.world.item.enchantment.Enchantments.SILK_TOUCH);
+        boolean hasLoot = existing.contains(net.minecraft.world.item.enchantment.Enchantments.BLOCK_FORTUNE)
+                || existing.contains(net.minecraft.world.item.enchantment.Enchantments.MOB_LOOTING);
+        if (!hasSilk && !hasLoot) {
+            return false;
+        }
+        // 已经有精准采集 → 拒绝抢夺/时运；已经有抢夺/时运 → 拒绝精准采集
+        boolean candidateIsSilk = candidate == net.minecraft.world.item.enchantment.Enchantments.SILK_TOUCH;
+        boolean candidateIsLoot = candidate == net.minecraft.world.item.enchantment.Enchantments.BLOCK_FORTUNE
+                || candidate == net.minecraft.world.item.enchantment.Enchantments.MOB_LOOTING;
+        return (hasSilk && candidateIsLoot) || (hasLoot && candidateIsSilk);
+    }
+
     private static boolean conflicts(ItemStack stack, Enchantment candidate) {
+        if (ominousConflict(stack, candidate)) {
+            return true;
+        }
         java.util.Set<Enchantment> existing =
                 net.minecraft.world.item.enchantment.EnchantmentHelper.getEnchantments(stack).keySet();
         if (existing.isEmpty()) {
@@ -409,8 +471,8 @@ public final class ScytheCompat {
         }
         // 基础值 ×（1 + 噬魂等级），再乘本模组的常态加成
         int souls = Math.round(SOULS_PER_HIT * (1 + soulEaterLevel(weapon)) * MalumCompat.SOUL_GAIN_BONUS);
-        if (MalumCompat.hasCharmCached(player)) {
-            souls = Math.round(souls * MalumCompat.CHARM_BONUS);
+        if (MalumCompat.charmBonus(player) > 1.0F) {
+            souls = Math.round(souls * MalumCompat.charmBonus(player));
         }
         SEHelper.increaseSESouls(player, souls);
     }
@@ -431,16 +493,48 @@ public final class ScytheCompat {
             return;
         }
         BlockState origin = event.getState();
-        if (!origin.is(BlockTags.MINEABLE_WITH_HOE)) {
+
+        // **不祥镰刀：没有精准采集也能采幽匿块**（掉方块本身，而不是幽匿/经验）
+        // 用户 2026-09-27 引的说明。
+        if (isOminousScythe(tool)
+                && isSculk(origin)
+                && tool.getEnchantmentLevel(net.minecraft.world.item.enchantment.Enchantments.SILK_TOUCH) <= 0) {
+            if (!event.isCanceled()) {
+                event.setCanceled(true);
+                level.destroyBlock(event.getPos(), false, serverPlayer);
+                net.minecraft.world.level.block.Block.popResource(
+                        level, event.getPos(), new ItemStack(origin.getBlock()));
+                tool.hurtAndBreak(1, serverPlayer,
+                        p -> p.broadcastBreakEvent(net.minecraft.world.entity.EquipmentSlot.MAINHAND));
+            }
+            return;
+        }
+
+        // 用户 2026-09-27：「镰刀可以用来打碎可以用锄头挖掘的石块，
+        // **也可以用来打碎作物、灌木和茎块**」
+        // 作物（CROPS）和茎块（STEMS）不属于 MINEABLE_WITH_HOE，要单独认。
+        if (!origin.is(BlockTags.MINEABLE_WITH_HOE)
+                && !origin.is(BlockTags.CROPS)
+                && !origin.is(BlockTags.REPLACEABLE_BY_TREES)
+                && !origin.is(net.minecraft.tags.BlockTags.LEAVES)) {
             return;
         }
 
         List<BlockPos> targets = new ArrayList<>();
         BlockPos center = event.getPos();
-        for (int dx = -CHAIN_RADIUS; dx <= CHAIN_RADIUS; dx++) {
-            for (int dz = -CHAIN_RADIUS; dz <= CHAIN_RADIUS; dz++) {
+        // **2x1x2**（用户规格）：沿玩家朝向 CHAIN_LEN 格 × 垂直朝向 CHAIN_WIDE 格 × 高 1 层。
+        // 不是 3x3 九宫格 —— 中心本身算在 2x2 里，所以连带的是"其余 3 格"。
+        net.minecraft.core.Direction facing = serverPlayer.getDirection();
+        int fx = facing.getStepX();
+        int fz = facing.getStepZ();
+        int sx = -fz;   // 垂直于朝向的"右方"
+        int sz = fx;
+        for (int a = 0; a < CHAIN_LEN; a++) {
+            for (int b = 0; b < CHAIN_WIDE; b++) {
+                int dx = fx * a + sx * b;
+                int dz = fz * a + sz * b;
                 if (dx == 0 && dz == 0) {
-                    continue;
+                    continue;   // 中心那块就是玩家正在挖的
                 }
                 BlockPos pos = center.offset(dx, 0, dz);
                 if (level.getBlockState(pos).is(origin.getBlock())) {

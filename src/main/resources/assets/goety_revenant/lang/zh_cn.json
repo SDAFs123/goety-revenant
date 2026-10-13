@@ -167,14 +167,12 @@
   "hud.goety_revenant.soul": "灵魂状态 ｜ 剩余 %s ｜ 契合度 %s%%",
   "hud.goety_revenant.possessing": "附身中 ｜ 还可维持 %s ｜ 契合度 %s%%",
   "hud.goety_revenant.energy": "灵魂能量 %s / %s",
-
   "element.goety_revenant.fire": "火",
   "element.goety_revenant.wood": "木",
   "element.goety_revenant.earth": "土",
   "element.goety_revenant.metal": "金",
   "element.goety_revenant.water": "水",
   "element.goety_revenant.spirit": "灵",
-
   "item.goety_revenant.fire_brew": "开窍魔药 · 火",
   "item.goety_revenant.wood_brew": "开窍魔药 · 木",
   "item.goety_revenant.earth_brew": "开窍魔药 · 土",
@@ -184,29 +182,24 @@
   "item.goety_revenant.opening_brew.desc": "用来打开「%s」的魔药。",
   "item.goety_revenant.opening_brew.overload": "喝下会点燃「%s超载」—— %s，连续待够 3 秒才能压下去并开窍。",
   "item.goety_revenant.opening_brew.hint": "由巫婆大锅依照诡厄巫法的制药流程酿出。",
-
   "effect.goety_revenant.soul_collapse": "灵魂溃散",
   "message.goety_revenant.soul_collapse": "灵魂能量被抽干了 —— 你的魂魄正在溃散",
   "message.goety_revenant.soul_collapse_end": "溃散停止了 —— 你只剩一口气，灵魂能量也少了 %s",
-
   "effect.goety_revenant.fire_overload": "元素超载 · 火（跳进水里）",
   "effect.goety_revenant.wood_overload": "元素超载 · 木（手持斧头）",
   "effect.goety_revenant.earth_overload": "元素超载 · 土（走进树林）",
   "effect.goety_revenant.metal_overload": "元素超载 · 金（让火烧起来）",
   "effect.goety_revenant.water_overload": "元素超载 · 水（埋进土里）",
   "effect.goety_revenant.spirit_overload": "元素超载 · 灵（回哭泣之井泡着）",
-
   "counter.goety_revenant.fire": "跳进水里",
   "counter.goety_revenant.wood": "手持一把斧头",
   "counter.goety_revenant.earth": "走进树林（附近要有原木或树叶）",
   "counter.goety_revenant.metal": "让火烧起来（着火或泡进岩浆）",
   "counter.goety_revenant.water": "埋进土里（踩土或沙，头顶要见不到天）",
   "counter.goety_revenant.spirit": "泡在哭泣之井里，直到它把你吐出来",
-
   "message.goety_revenant.overload_start": "元素超载：%s —— %s，连续待够 3 秒才能压下去",
   "message.goety_revenant.overload_interrupted": "克制被打断了 —— %s",
   "message.goety_revenant.brew_already_open": "「%s」已经开窍了，不用再喝",
-
   "passive.goety_revenant.mobility": "行动",
   "passive.goety_revenant.survival": "生存",
   "passive.goety_revenant.combat": "战斗力",
@@ -216,13 +209,11 @@
   "passive.goety_revenant.steadfast": "坚毅",
   "passive.goety_revenant.swift": "迅捷",
   "passive.goety_revenant.fortune": "幸运",
-
   "tooltip.goety_revenant.focus.header": "嵌入「%s」· %s ×%s",
   "tooltip.goety_revenant.focus.line": "  · %s %s",
   "tooltip.goety_revenant.focus.twisted": "（元素扭曲）",
   "tooltip.goety_revenant.focus.own": "（本职）",
   "tooltip.goety_revenant.focus.need_brew": "需要先喝「%s」开窍",
-
   "tooltip.goety_revenant.halo.hint": "按下[SHIFT]查看执掌神格",
   "tooltip.goety_revenant.halo.header": "回魂 · 神格",
   "tooltip.goety_revenant.halo.orifices": "已开神窍：%s / %s",
@@ -230,17 +221,14 @@
   "tooltip.goety_revenant.halo.broken": "「环已破碎，神性未灭 —— 它还记得自己曾是什么。」",
   "tooltip.goety_revenant.halo.ascension": "「生命既已擢升，魂魄自当就位。」",
   "tooltip.goety_revenant.halo.end": "「终末已至，你不再需要身体。」",
-
   "tier.goety_revenant.1": "普通",
   "tier.goety_revenant.2": "罕见",
   "tier.goety_revenant.3": "稀有",
   "tier.goety_revenant.4": "史诗",
   "tier.goety_revenant.5": "传说",
-
   "message.goety_revenant.slot_opened": "「%s」已开窍 —— 现在可以嵌入聚晶了",
   "message.goety_revenant.embed_failed": "嵌入失败 —— 灵魂能量不够。聚晶没被消耗，还在你身上",
   "message.goety_revenant.embed_focus_missing": "嵌入中断 —— 「%s」的聚晶已经不在原来那一格了（聚晶没被消耗）",
-
   "screen.goety_revenant.body.soul_energy": "灵魂能量 %s",
   "screen.goety_revenant.body.need_brew": "未开窍 —— 需要喝「%s」",
   "screen.goety_revenant.body.cost": "嵌入消耗 %s 灵魂能量",
@@ -250,7 +238,6 @@
   "screen.goety_revenant.body.goes_to": "归属：%s",
   "screen.goety_revenant.body.no_organ": "没有对应的窍（这不是聚晶？）",
   "screen.goety_revenant.body.brewing": "嵌入中…",
-
   "screen.goety_revenant.converter.picked": "已选中",
   "screen.goety_revenant.converter.click_pick": "点一下选它做起始精魄",
   "screen.goety_revenant.converter.count_hint": "（滚轮 / 按住拖动也能调）",
@@ -260,7 +247,6 @@
   "screen.goety_revenant.converter.hint_no_cage": "下方没有诅咒之笼 —— 在转化台正下方放一个",
   "screen.goety_revenant.converter.hint_low": "灵魂能量还差 %s 点才够跑一轮",
   "screen.goety_revenant.converter.hint_ok": "运转中 —— 每轮产出 %s 枚精魄",
-
   "block.goety_revenant.flesh_altar": "血肉祭坛",
   "block.goety_revenant.flesh_altar.desc": "血肉仪式的专属祭坛。正下方必须放一个血肉之笼，笼里要有灵魂图腾。",
   "block.goety_revenant.flesh_cage": "血肉之笼",
@@ -284,5 +270,6 @@
   "message.goety_revenant.ritual_vessel_broken": "有吞噬基座没接上血管 —— 从祭坛引一条血管过去",
   "message.goety_revenant.ritual_no_focus": "祭坛上要放一枚聚晶",
   "message.goety_revenant.ritual_devoured": "血肉仪式 · 吞合 —— 「%s」已被吞入%s",
-  "message.goety_revenant.ritual_sacrificed": "血肉仪式 · 献祭 —— 五脏已献出，%s 枚聚晶随之消散"
+  "message.goety_revenant.ritual_sacrificed": "血肉仪式 · 献祭 —— 五脏已献出，%s 枚聚晶随之消散",
+  "message.goety_revenant.ritual_need_vessels": "需要血管连接每一个基座"
 }

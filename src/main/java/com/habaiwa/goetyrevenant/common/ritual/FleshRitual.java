@@ -156,8 +156,38 @@ public final class FleshRitual implements IRitualType {
      * <p>所以这里<b>什么都不做</b>，直接放行：祭坛与血肉之笼的判定已经由
      * {@code FleshAltarBlockEntity} 在驱动仪式之前把关了，不必在这条热路径上重复数一遍方块。</p>
      */
+    /**
+     * **多方块判定** —— 洒放的血肉仪式要求"每个基座都用血管连到祭坛"。
+     *
+     * <p>用户 2026-09-27 的规格：「血肉仪式是需要用**血管连接每一个基座**，
+     * 所以执行仪式是**吞进去**，到血肉之笼」。</p>
+     *
+     * <p>判定复用 {@link BloodVessels}（那一层早就写好了 BFS 连通判定，
+     * 只是此前没有接到仪式流程里）：</p>
+     * <ul>
+     *   <li>半径 8 内**没有任何基座** → 放行（让"祭坛单干"也能用，不挡玩家）</li>
+     *   <li>有基座 → **每一个**都必须通过血管连到祭坛，缺一个就拒绝</li>
+     * </ul>
+     */
     @Override
     public boolean getRequirement(RitualBlockEntity altar, Player player, BlockPos pos, Level level) {
+        if (level.isClientSide()) {
+            return true;
+        }
+        java.util.List<BlockPos> pedestals =
+                com.habaiwa.goetyrevenant.common.flesh.BloodVessels.pedestals(level, pos);
+        if (pedestals.isEmpty()) {
+            return true;
+        }
+        for (BlockPos pedestal : pedestals) {
+            if (!com.habaiwa.goetyrevenant.common.flesh.BloodVessels.connected(level, pos, pedestal)) {
+                if (player != null) {
+                    player.displayClientMessage(Component.translatable(
+                            "message.goety_revenant.ritual_need_vessels").withStyle(ChatFormatting.RED), true);
+                }
+                return false;
+            }
+        }
         return true;
     }
 

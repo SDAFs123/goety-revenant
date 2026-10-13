@@ -97,8 +97,8 @@ public final class MalumHarvestCompat {
         // 收割 = 我们的灵魂能量结算（含本模组常态加成与聚魂护符）
         float maxHealth = victim.getMaxHealth();
         int souls = Math.round(HARVEST_BASE * Math.max(1.0F, maxHealth / 20.0F) * MalumCompat.SOUL_GAIN_BONUS);
-        if (MalumCompat.hasCharmCached(player)) {
-            souls = Math.round(souls * MalumCompat.CHARM_BONUS);
+        if (MalumCompat.charmBonus(player) > 1.0F) {
+            souls = Math.round(souls * MalumCompat.charmBonus(player));
         }
         SEHelper.increaseSESouls(player, souls);
     }

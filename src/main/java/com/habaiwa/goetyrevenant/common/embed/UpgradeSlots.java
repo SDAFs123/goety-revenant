@@ -26,6 +26,8 @@ public final class UpgradeSlots {
 
     private static final String KEY_PREFIX = "GRUpgrade_";
     private static final String KEY_COOLDOWN = "GRUpgradeCd";
+    /** **当前选中的槽** —— 快捷键轮换方向时的目标。 */
+    private static final String KEY_SELECTED = "GRUpgradeSel";
 
     private static final UUID FORCE_ID = UUID.nameUUIDFromBytes("goety_revenant:upgrade_force".getBytes());
     private static final UUID WARD_ID = UUID.nameUUIDFromBytes("goety_revenant:upgrade_ward".getBytes());
@@ -78,6 +80,49 @@ public final class UpgradeSlots {
     /** 第 index 个槽给出的三个选项。 */
     public static UpgradeType.Type[] candidates(int index) {
         return UpgradeType.ofGroup(UpgradeType.groupOfSlot(index));
+    }
+
+    /** **当前选中的槽**（0 ~ COUNT-1）—— 界面里点过的那个，或第一次按键时从 0 开始。 */
+    public static int selected(ServerPlayer player) {
+        int i = player.getPersistentData().getInt(KEY_SELECTED);
+        return (i < 0 || i >= COUNT) ? 0 : i;
+    }
+
+    /** 记住"当前选中的槽" —— 界面里点选时调。 */
+    public static void setSelected(ServerPlayer player, int index) {
+        if (index >= 0 && index < COUNT) {
+            player.getPersistentData().putInt(KEY_SELECTED, index);
+        }
+    }
+
+    /**
+     * **用快捷键轮换"当前槽"的方向**（不打开界面就能调被动）。
+     *
+     * <p>用户 2026-10-10：「同样的被动效果一个个调很麻烦，
+     * **增加快捷键可以切换当前序列的选项**」。</p>
+     *
+     * <p>空 → 第 1 个方向 → 第 2 个 → 第 3 个 → 空（循环）。</p>
+     *
+     * @return 换完之后那个方向（null = 空），失败时返回 null 且 {@link #cooldown} 会 &gt; 0
+     */
+    @javax.annotation.Nullable
+    public static UpgradeType.Type cycle(ServerPlayer player) {
+        int index = selected(player);
+        UpgradeType.Type[] options = candidates(index);
+        UpgradeType.Type current = get(player, index);
+        int pos = -1;
+        if (current != null) {
+            for (int k = 0; k < options.length; k++) {
+                if (options[k].id().equals(current.id())) {
+                    pos = k;
+                    break;
+                }
+            }
+        }
+        // pos = -1（空）→ 0；0/1/2 → 下一个；到顶回空（-1 → 0 的循环）
+        int next = pos + 1;
+        UpgradeType.Type target = next >= options.length ? null : options[next];
+        return set(player, index, target) ? target : null;
     }
 
     public static int cooldown(ServerPlayer player) {
