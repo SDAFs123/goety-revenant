@@ -490,6 +490,10 @@ public final class Possession {
         SoulData.clearPossession(player);
         SoulData.setSoulMode(player, "");
         SoulData.setTicks(player, 0);
+        // 附身来的能力（飞行/水下呼吸/火焰免疫/爬墙/摔落免疫…）也要还回去。
+        // 常规路径里 eject() 已经清过一次，但 endSoul() 是共用出口 ——
+        // 清两遍是无害的，漏一遍就是"回自己身体后还带着别人的体质"。
+        PossessAbilities.clear(player);
         SoulData.setSoul(player, false);
         exitSoulForm(player);
         player.setGameMode(previous == null || previous == GameType.SPECTATOR ? GameType.SURVIVAL : previous);
