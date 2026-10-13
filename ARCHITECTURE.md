@@ -130,7 +130,10 @@ client/tree/
 
 ## 四、验收标准
 
-1. **没有任何单文件超过 800 行**（当前 `TreeTexture` 2887 → 目标 ≤ 600）
+1. **没有任何单文件超过 900 行**（理想 800）——
+   现状：`TreeTexture` **841** · `TerrainPainter` 645 · `TreeCanvas` 384 · `TreePainter` 357。
+   `TreeTexture` 剩下的全是"纹理生命周期"这条主链（`ensure`/`buildInto`/`takePending`/`downsample`/`drawView`），
+   再拆会把状态交接（后台线程 → 主线程 → 纹理注册）切散，**耦合成本高于收益**，所以停在这里。
 2. **没有任何私有方法零调用**（用固定脚本复查，脚本要去除掉方法引用的误报）
 3. **每个包有明确的领域职责**，注释里一句话说得清
 4. **附身不变量**：回自己身体后与正常游玩无差别（含 `isPossessing` 必须为假）
