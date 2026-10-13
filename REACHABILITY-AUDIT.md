@@ -89,9 +89,9 @@
 ## 待办
 
 - [x] **物品层已核对**（见 §七）—— 2 个完全无效
-- [ ] 方块层逐个核对
-- [ ] 系统级触发链：回魂 / 魂树 / 序列 / 血肉线 / 元素反应 / 血肉仪式 / 神识 / 灵化 / 灵魂温度 / 星象
-- [ ] `SOUL_WARD` 定性（该做没做完 / 已被取代）
+- [x] **方块层已核对**（见 §八）
+- [x] **系统级触发链已核对**（见 §九）
+- [ ] `SOUL_WARD` 定性（**待你定**）
 - [ ] `UPGRADE_CYCLE` 补上切换逻辑（用户明确要过的功能）
 - [ ] `broadcastSoulAppearance` 删或标注弃用
 
@@ -122,3 +122,48 @@
 | 「精魂收割物品（本模组与 Iron 的法术与魔法书的武器、工具）`#malum:soul_hunter_weapon`…**增加击杀敌人时的精魂掉落**」 | `SoulHarvestCharmItem` **只有 tooltip**，没接进任何击杀结算 → **没做** |
 
 **（注意）**：这两个不是"废弃设计"，是**用户要的功能没有实现** —— 与七窍那批性质不同。
+
+## 八、方块层 —— ★ 1 个空类
+
+6 个方块**全部被引用**，9 个 block 类：
+
+| 方块 | 实现 | 判定 |
+|---|---|---|
+| **`BLOOD_VESSEL`（血管）** | `BloodVesselBlock` **20 行纯空类**（只有构造器） | ★ **"用血管连接每一个基座"没实现** |
+| `FLESH_ALTAR` | `FleshAltarBlock` 50 行，`mouth_open` / `eyes` 两个 blockstate + 继承本体 `DarkAltarBlock` | ✅ |
+| `FLESH_CAGE` | `FleshCageBlock` 116 + `FleshCageBlockEntity` 181 行 | ✅ |
+| `SPIRIT_CONVERTER` | `SpiritConverterBlock` 79 + `SpiritConverterBlockEntity` 239 行 | ✅ |
+| `DEVOUR_PEDESTAL` | `DevourPedestalBlock` 37 行，继承本体 `PedestalBlock` | ✅（但**没有自己的基座逻辑**） |
+| `WHITE_LIGHT` | `WhiteLightBlock` 20 行空类 | ✅ 正常（纯装饰） |
+
+## 九、系统级触发链 —— 8 个通、2 个断
+
+| 系统 | 触发链 | 判定 |
+|---|---|---|
+| **回魂** | 死亡 → `SoulDeathHandler` → `SoulForm` → 附身（`PossessionTarget`/`Possession`）→ 召回/真死（`PossessionRecall`）。**210 处 / 32 文件** | ✅ 通 |
+| **魂树** | 按键 → `TreeScreen` → 嵌入（`UpgradeMessage`）→ `UpgradeSlots`。**40 处 / 18 文件** | ✅ 通 |
+| **序列** | 跳井 → `WeepingWellUnlock` → 纯白维度 → `SevenQuestions`/`QuizRoom` → 觉醒。**157 处 / 22 文件** | ✅ 通 |
+| **神识** | 键位 → `ShenShiMessage` → `ShenShi` → `ShenShiSyncMessage` → `ShenShiOverlay`。**19 文件** | ✅ 通 |
+| **灵化** | 键位 → `LingHuaMessage` → `LingHua` → `SoulTickHandler`。**18 文件** | ✅ 通 |
+| **灵魂温度** | 战斗/治疗/休息 → `SoulTemperature` → `BodyStateMessage` 同步 → HUD/反应威力。**12 文件** | ✅ 通 |
+| **星象** | `AstrologyCompat` 反射调 `Constellations.inSeason/nodes` → `TreeScreen` 画当空之宫。**4 文件** | ✅ 通 |
+| **元素反应** | `EmbeddedCasting:85` 调 `ComboChain.recordCast` → 主命中 → `ReactionEvents.onHurt` → `ComboChain.onMainHit` → 反应 + 温度 + 强化槽倍率。**7 文件** | ✅ **通**（链路完整，含防递归标记与超时重开） |
+| **血肉仪式** | 注册进本体 `RitualType` → `FleshRitual.canStart` → `onFinishRitual` → `FleshRites.devour/sacrifice`。**273 行** | ⚠️ **有代码但缺 2 项**（见下） |
+| **血肉线** | `FleshProgress.line/stage` 只被**读**；`set` 只被 `DebugCommands` 调；**`advance` / `resolveLine` / `defined` 无人调用** | ★ **断** —— 游戏内没有晋升途径，只能靠 `/grdebug` |
+
+## 十、★ 完整"无效果 / 缺功能"清单（10 条）
+
+| # | 项目 | 性质 | 用户是否要求过 |
+|---|---|---|---|
+| 1 | **`SOUL_TALISMAN`（聚魂护符）** | 注册成原版 `Item`，**零逻辑**，外部 0 引用 | ✅ 要求过「**增加 5% 灵魂能量获取**」 |
+| 2 | **`SoulHarvestCharmItem`（精魂收割护符）** | 30 行，**只有 tooltip**，外部 0 引用 | ✅ 要求过「**增加击杀敌人时的精魂掉落**」 |
+| 3 | **`UPGRADE_CYCLE` 键位** | 定义了但**没有 `consumeClick`**，按下无反应 | ✅ 要求过「**快捷键切换当前序列的选项**」 |
+| 4 | **`BloodVesselBlock`** | **20 行纯空类** | ✅ 要求过「**用血管连接每一个基座**」 |
+| 5 | **`FleshRitual.getRequirement`** | 直接 `return true`，**没有多方块判定** | ✅ 要求过「祭坛 + 基座……多方块」 |
+| 6 | **`FleshProgress.advance` 等** | **无人调用** → 血肉线只能靠指令推进 | ✅ 要求过「血肉晋升线」 |
+| 7 | `SOUL_WARD` 状态效果 | 定义了，**无人施加** | ❓ 待你定（该做 / 已取代） |
+| 8 | `broadcastSoulAppearance` + `SoulAppearanceMessage` | 死代码，**故意不用**（灵魂该完全看不见） | — 建议删或标注弃用 |
+| 9 | `ComboChain.clear` | 死方法（但**超时机制正常**，无害） | — 可删 |
+| 10 | `FleshRitual` / `FleshRites` 用 `OrganType` | **用的是已废的六窍枚举** | — 需改成"枝" |
+
+**⚠️ 第 1~6 条不是"废弃设计"，是用户要求过、但没实现或没接上。**
