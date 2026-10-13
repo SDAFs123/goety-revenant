@@ -1,5 +1,7 @@
 package com.habaiwa.goetyrevenant.client.tree;
 
+import java.util.Random;
+
 import com.mojang.blaze3d.platform.NativeImage;
 
 /**
@@ -205,4 +207,47 @@ public abstract class TreeCanvas {
     /** 土色阶（深 → 浅）。 */
     protected static final int[] DIRT = {
             0xFF160E0A, 0xFF241611, 0xFF31201A, 0xFF3E2A21, 0xFF4C352A, 0xFF5A4033};
+
+    /* ------------------------------------------------------------------ */
+    /*  共用状态与工具（多个画笔都要用，放这层免得各抄一份）                    */
+    /* ------------------------------------------------------------------ */
+    /** 绘制用的随机源 —— 每个内容图一份，保证同一存档同一棵树长得一样。 */
+    protected Random rng;
+
+    /** 星光的颜色（照在土面上、叶簇缝隙里透出来的那种光）。 */
+    protected static final int STARLIGHT = 0xFFCFE8FF;
+    /** 苔藓色（根须上、土面上的绿）。 */
+    protected static final int MOSS = 0xFF2E8C78;
+    /** 苔藓的亮面。 */
+    protected static final int MOSS_LIT = 0xFF52E8DC;
+
+    /** 把一个 ARGB 的每个通道整体加减 d（用于颗粒的明暗面）。 */
+    /** 整体加减一个亮度（抖动用）。 */
+    protected int shift(int argb, int d) {
+        int r = Math.max(0, Math.min(255, ((argb >> 16) & 0xFF) + d));
+        int g = Math.max(0, Math.min(255, ((argb >> 8) & 0xFF) + d));
+        int b = Math.max(0, Math.min(255, (argb & 0xFF) + d));
+        return 0xFF000000 | (r << 16) | (g << 8) | b;
+    }
+    /** 递归分叉的毛细血管。 */
+    protected void capillary(double x, double y, double ang, float top, float bottom, int depth) {
+        if (depth <= 0) {
+            return;
+        }
+        int steps = 24 + this.rng.nextInt(30);
+        float wid = 0.9F + depth * 0.35F;
+        for (int s = 0; s < steps; s++) {
+            ang += (this.rng.nextDouble() - 0.5D) * 0.35D;
+            x += Math.cos(ang) * 1.1D;
+            y += Math.sin(ang) * 1.1D;
+            if (x < 0 || y < top || x >= this.width || y >= bottom) {
+                return;
+            }
+            this.blendDot((int) x, (int) y, 0xFF7A1E24, 0.3F + depth * 0.06F);
+            if (s % 14 == 0 && this.rng.nextFloat() < 0.6F) {
+                this.capillary(x, y, ang + (this.rng.nextBoolean() ? 0.8D : -0.8D),
+                        top, bottom, depth - 1);
+            }
+        }
+    }
 }
