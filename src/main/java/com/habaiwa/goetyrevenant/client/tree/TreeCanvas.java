@@ -216,6 +216,15 @@ public abstract class TreeCanvas {
 
     /** 当前阶数（决定树长多大）—— 树、根、种子都要读它。 */
     protected int stage = -2;
+
+    /** 叶色阶（暗 → 亮）。 */
+    protected static final int[] LEAF = {
+            0xFF0C2A22, 0xFF10402F, 0xFF16543B, 0xFF1D6A49, 0xFF278059,
+            0xFF34966B, 0xFF45AC80, 0xFF5CC197};
+    /** 实际使用的叶子色阶（按序列染过色的那种；现在不染，等于 LEAF）。 */
+    protected int[] leaf = LEAF;
+    /** 嵌入槽的选择状态（界面传进来，决定哪片叶子是亮的）。 */
+    protected int[] choices;
     /** 实际使用的树皮色阶。 */
     protected int[] bark;
     /** **湿润高光**：压到暗红灰（地下的湿，只是"不干"，不是"反光"）。 */
@@ -258,6 +267,29 @@ public abstract class TreeCanvas {
     /** 长到哪一步了（0~1 连续插值）。 */
     protected float grow() {
         return Math.max(0.0F, Math.min(1.0F, this.stage / 7.0F));
+    }
+
+    /**
+     * **关键帧位置** —— 树的参数在它们之间连续插值。
+     *
+     * <p>四个阶段：幼苗 / 小树 / 成树 / 巨树。注意这里是【位置】不是阶数 ——
+     * {@code ramp()} 与 {@code rampCount()} 拿当前 grow() 在这条线上找区间。</p>
+     */
+    protected static final float[] KEY = {0.0F, 1.0F / 3.0F, 2.0F / 3.0F, 1.0F};
+
+    /** 按阶数在关键帧之间平滑插值取整数（树的各级参数都靠它连续变化）。 */
+    protected int rampCount(int[] keys) {
+        float g = this.grow();
+        for (int i = 0; i < KEY.length - 1; i++) {
+            if (g <= KEY[i + 1] || i == KEY.length - 2) {
+                float span = KEY[i + 1] - KEY[i];
+                float t = span <= 0.0F ? 0.0F : (g - KEY[i]) / span;
+                t = Math.max(0.0F, Math.min(1.0F, t));
+                t = 1.0F - (1.0F - t) * (1.0F - t);
+                return Math.round(keys[i] + (keys[i + 1] - keys[i]) * t);
+            }
+        }
+        return keys[keys.length - 1];
     }
 
     /** **一条带阴影的枝干** —— 树和根共用（根其实也是枝，只是一路向下）。 */

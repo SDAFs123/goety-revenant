@@ -78,10 +78,7 @@ public final class TreeTexture extends com.habaiwa.goetyrevenant.client.tree.Tre
         this.tex = new ResourceLocation("goety_revenant", "dynamic/" + name);
     }
 
-    /** 叶色阶（暗 → 亮）。 */
-    private static final int[] LEAF = {
-            0xFF0C2A22, 0xFF10402F, 0xFF16543B, 0xFF1D6A49, 0xFF278059,
-            0xFF34966B, 0xFF45AC80, 0xFF5CC197};
+    // LEAF（叶色阶）在 TreeCanvas 里（protected）
 
     /** 缺氧的紫（淤血/深层）。 */
     private static final int MEAT_PURPLE = 0xFF2E141C;
@@ -107,8 +104,7 @@ public final class TreeTexture extends com.habaiwa.goetyrevenant.client.tree.Tre
     };
 
 
-    /** 四个阶段的参数（之间连续插值）。 */
-    private static final float[] KEY = {0.0F, 1.0F / 3.0F, 2.0F / 3.0F, 1.0F};
+    // KEY 在 TreeCanvas 里（protected）
     /** 主干高度占"地面到屏幕上沿"的比例。 */
     // ======================================================================
     //  **树在内容图上占多高** —— 这个比例同时决定了"看不看得全"和"细节够不够"。
@@ -175,10 +171,9 @@ public final class TreeTexture extends com.habaiwa.goetyrevenant.client.tree.Tre
     private int seqIndex = -1;
     /** 实际使用的树皮 / 叶子色阶（按序列染过色的）。 */
     // bark（树皮色阶）在 TreeCanvas 里（protected）
-    private int[] leaf = LEAF;
+    // leaf / choices 在 TreeCanvas 里（protected）
     private long stamp = Long.MIN_VALUE;
     private float zoom = 1.0F;
-    private int[] choices;
     /**
      * **六个嵌入位各嵌了什么颜色的聚晶**（0 = 空）。
      *
@@ -613,19 +608,6 @@ public final class TreeTexture extends com.habaiwa.goetyrevenant.client.tree.Tre
         return keys[keys.length - 1];
     }
 
-    private int rampCount(int[] keys) {
-        float g = this.grow();
-        for (int i = 0; i < KEY.length - 1; i++) {
-            if (g <= KEY[i + 1] || i == KEY.length - 2) {
-                float span = KEY[i + 1] - KEY[i];
-                float t = span <= 0.0F ? 0.0F : (g - KEY[i]) / span;
-                t = Math.max(0.0F, Math.min(1.0F, t));
-                t = 1.0F - (1.0F - t) * (1.0F - t);
-                return Math.round(keys[i] + (keys[i + 1] - keys[i]) * t);
-            }
-        }
-        return keys[keys.length - 1];
-    }
 
     /**
      * **按序列给树染色** —— 七条序列的树不该长一个样。
