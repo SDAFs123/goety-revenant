@@ -198,4 +198,11 @@ public abstract class TreeCanvas {
         return String.format("内容区 %dx%d = 整张的 %.1f%%",
                 this.inkX1 - this.inkX0, this.inkY1 - this.inkY0, used * 100.0D / full);
     }
+
+    /* ------------------------------------------------------------------ */
+    /*  公共配色（两个画笔共用，放这里免得各抄一份）                          */
+    /* ------------------------------------------------------------------ */
+    /** 土色阶（深 → 浅）。 */
+    protected static final int[] DIRT = {
+            0xFF160E0A, 0xFF241611, 0xFF31201A, 0xFF3E2A21, 0xFF4C352A, 0xFF5A4033};
 }
