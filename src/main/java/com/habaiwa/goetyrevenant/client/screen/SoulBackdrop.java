@@ -1,5 +1,7 @@
 package com.habaiwa.goetyrevenant.client.screen;
 
+import com.habaiwa.goetyrevenant.client.tree.TreeLayout;
+
 import com.mojang.blaze3d.platform.NativeImage;
 import java.util.Random;
 import net.minecraft.client.Minecraft;
@@ -65,7 +67,6 @@ public final class SoulBackdrop {
     //    · 还有大尺度的星云团（比星空里那些大得多、淡得多）
     // ======================================================================
     /** 宇宙区占内容图上面多少。 */
-    private static final float UNIVERSE_END = 0.14F;
 
     /** 星系：位置 / 半径 / 扁平度 / 倾角 / 亮度 / 有没有旋臂。 */
     private static final int GALAXIES = 5;
@@ -310,7 +311,7 @@ public final class SoulBackdrop {
         // 大尺度星云团（比星空里的那些大得多、淡得多）
         for (int i = 0; i < 4; i++) {
             float nx = rng.nextFloat() * w;
-            float ny = rng.nextFloat() * h * UNIVERSE_END;
+            float ny = rng.nextFloat() * h * TreeLayout.UNIVERSE_END;
             float nr = w * (0.10F + rng.nextFloat() * 0.16F);
             int nc = (i % 2 == 0) ? 0xFF241A3A : 0xFF1A2A38;
             // 极淡的一团（二次方衰减，没有边界）

@@ -1,5 +1,7 @@
 package com.habaiwa.goetyrevenant.client.screen;
 
+import com.habaiwa.goetyrevenant.client.tree.TreeLayout;
+
 import com.habaiwa.goetyrevenant.client.BodyClientState;
 import com.habaiwa.goetyrevenant.common.body.UpgradeType;
 import com.habaiwa.goetyrevenant.common.network.BodyActionMessage;
@@ -336,7 +338,7 @@ public class TreeScreen extends Screen {
             //  1.0 只能装 23.3%，装不下这两样 —— 那就是"缩放放太大"。
             // ----------------------------------------------------------------
             this.zoom = 0.80F;
-            float vis = 1.0F / (com.habaiwa.goetyrevenant.client.screen.TreeTexture.CONTENT_H
+            float vis = 1.0F / (TreeLayout.CONTENT_H
                     * this.zoom);
             final float focus = 0.44F;      // 想要它落在画面正中
             this.viewY = Math.max(0, (int) (this.tree.contentHeight()
@@ -438,7 +440,7 @@ public class TreeScreen extends Screen {
         // **诊断行（临时）** —— 一眼看清：背景好了没、视口在哪、星空在不在视野里。
         // 看到这行字之后就该知道自己缺的是哪一环，不用再来回猜。
         {
-            float vis = 1.0F / (com.habaiwa.goetyrevenant.client.screen.TreeTexture.CONTENT_H
+            float vis = 1.0F / (TreeLayout.CONTENT_H
                     * Math.max(0.30F, this.zoom));
             float top = this.viewY / (float) Math.max(1, this.tree.contentHeight());
             float bottom = top + vis;
