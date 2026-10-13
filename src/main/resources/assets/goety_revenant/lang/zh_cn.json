@@ -271,5 +271,6 @@
   "message.goety_revenant.ritual_no_focus": "祭坛上要放一枚聚晶",
   "message.goety_revenant.ritual_devoured": "血肉仪式 · 吞合 —— 「%s」已被吞入%s",
   "message.goety_revenant.ritual_sacrificed": "血肉仪式 · 献祭 —— 五脏已献出，%s 枚聚晶随之消散",
-  "message.goety_revenant.ritual_need_vessels": "需要血管连接每一个基座"
+  "message.goety_revenant.ritual_need_vessels": "需要血管连接每一个基座",
+  "message.goety_revenant.flesh_advanced": "血肉线推进到第 %s 阶（%s）"
 }

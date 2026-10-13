@@ -97,6 +97,15 @@ public final class RevenantConfig {
     /** 切换强化方向的冷却（tick，20 = 1 秒）。 */
     public static int upgradeSwitchCooldown = 1200;
 
+    /* ==================== 血肉线 ==================== */
+    /**
+     * 走一次血肉仪式要消耗多少**血肉能量**才晋升一阶（见 FleshRites.advanceFleshLine）。
+     *
+     * <p>用户 2026-10-11：「土壤之下制作血肉层，往下血肉层是魂树的根，**这是血肉晋升线**」。
+     * 填 0 = 不消耗，每次仪式必推一阶。</p>
+     */
+    public static int fleshAdvanceCost = 3000;
+
     /* ==================== 灵魂温度 ==================== */
     /** 释放一次聚晶降多少温。 */
     public static int tempPerCast = 6;

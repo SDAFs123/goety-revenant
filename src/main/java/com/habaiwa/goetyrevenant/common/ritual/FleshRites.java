@@ -25,6 +25,34 @@ public final class FleshRites {
      * 区别只是：材料由仪式的基座出，不需要玩家背包里有那一枚。</p>
      */
     /** 手上这一枚能不能"吞" —— 得是聚晶，而且真的带法术。 */
+    /**
+     * **血肉线晋升** —— 走完一次血肉仪式，血肉就被推进一步。
+     *
+     * <p>用户 2026-10-11：「土壤之下制作血肉层，往下血肉层是魂树的根，
+     * **这是血肉晋升线**」。晋升的代价是**血肉能量**
+     * （配置项 {@code fleshAdvanceCost}，默认 3000）。</p>
+     *
+     * <p>没定线（底色平票）时不推进 —— 那是故意留的"未定"状态。</p>
+     */
+    private static void advanceFleshLine(ServerPlayer player) {
+        if (!com.habaiwa.goetyrevenant.common.flesh.FleshProgress.defined(player)) {
+            return;
+        }
+        int stage = com.habaiwa.goetyrevenant.common.flesh.FleshProgress.stage(player);
+        if (stage >= com.habaiwa.goetyrevenant.common.flesh.FleshLine.STAGES) {
+            return;   // 已经走到顶
+        }
+        int cost = com.habaiwa.goetyrevenant.common.config.RevenantConfig.fleshAdvanceCost;
+        if (cost > 0 && !com.habaiwa.goetyrevenant.common.flesh.FleshEnergy.consume(player, cost)) {
+            return;   // 血肉能量不够，这次不推
+        }
+        com.habaiwa.goetyrevenant.common.flesh.FleshProgress.advance(player, 1);
+        int now = com.habaiwa.goetyrevenant.common.flesh.FleshProgress.stage(player);
+        player.displayClientMessage(Component.translatable(
+                "message.goety_revenant.flesh_advanced", now,
+                com.habaiwa.goetyrevenant.common.flesh.FleshProgress.line(player).cn()), false);
+    }
+
     public static boolean isEmbeddable(ItemStack stack) {
         if (stack == null || stack.isEmpty()
                 || !(stack.getItem() instanceof com.Polarice3.Goety.api.items.magic.IFocus item)) {
@@ -49,6 +77,7 @@ public final class FleshRites {
         // 直接装（不走背包、不走扣灵魂能量的那条路 —— 代价已经在仪式里付了）
         BodyModData.setFocus(player, organ, focus.copy());
         Embedding.applyAll(player);
+        advanceFleshLine(player);
         RevenantNetwork.sendBodyState(player);
         player.displayClientMessage(Component.translatable("message.goety_revenant.ritual_devoured",
                 focus.getHoverName(), organ.displayName()), false);
@@ -75,6 +104,7 @@ public final class FleshRites {
             BodyModData.setSacrificed(player, organ, true);
         }
         Embedding.applyAll(player);
+        advanceFleshLine(player);
         RevenantNetwork.sendBodyState(player);
         player.displayClientMessage(Component.translatable(
                 "message.goety_revenant.ritual_sacrificed", sacrificed), false);

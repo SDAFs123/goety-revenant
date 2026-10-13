@@ -13,13 +13,15 @@ import net.minecraft.world.entity.player.Player;
  * </pre>
  * <p>魂树是上面那棵树，血肉线是土壤之下那些扎进肉里的根。</p>
  *
- * <h3>底色还没定</h3>
- * <p>"你的底色决定你走哪条路" —— 但底色<b>怎么算</b>还没定下来
- * （序列映射？行为统计？还是七问答顺带算出来？）。
- * 所以这里 {@link #resolveLine} 现在只留了一个接口，不做任何猜测：
- * 底色没定的时候就返回 {@code null}，玩家的血肉线停在"未定"。</p>
+ * <h3>底色已经定了（2026-10-14）</h3>
+ * <p>用户 2026-10-11 给了规则：「每个序列者觉醒后，血肉线都会走向其中一条。
+ * <b>不是选的，是你的底色决定的</b>：向外要的人 → 异化；向内收的人 → 灵化；向下沉的人 → 硅化」。</p>
  *
- * <p>等底色规则定了，只要把那个方法填上，其它代码都不用动。</p>
+ * <p>实现落在 {@link BloodlineBias}：七问答每答一题顺便投一票
+ * （哪一票对应哪个方向，是那张表按选项语义定的），答完七题多数决。
+ * <b>觉醒</b>（{@code SevenQuestions.match}）时定下来，之后 {@link #advance} 逐阶往上走。</p>
+ *
+ * <p>三方向平票时仍然返回 {@code null}，玩家停在"未定" —— 不猜。</p>
  */
 public final class FleshProgress {
     private static final String KEY_LINE = "GRFleshLine";
@@ -83,6 +85,6 @@ public final class FleshProgress {
      * 而不是从序列名硬推。</p>
      */
     public static FleshLine resolveLine(Player player) {
-        return null;
+        return BloodlineBias.resolve(player);
     }
 }

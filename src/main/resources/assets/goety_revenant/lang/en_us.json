@@ -256,5 +256,6 @@
   "message.goety_revenant.ritual_no_focus": "A focus must be placed on the altar",
   "message.goety_revenant.ritual_devoured": "Flesh Rite - Devour: %s was swallowed into %s",
   "message.goety_revenant.ritual_sacrificed": "Flesh Rite - Sacrifice: the five viscera are given up, and %s focus(es) vanish with them",
-  "message.goety_revenant.ritual_need_vessels": "Every pedestal must be linked by blood vessels"
+  "message.goety_revenant.ritual_need_vessels": "Every pedestal must be linked by blood vessels",
+  "message.goety_revenant.flesh_advanced": "Flesh line advanced to stage %s (%s)"
 }

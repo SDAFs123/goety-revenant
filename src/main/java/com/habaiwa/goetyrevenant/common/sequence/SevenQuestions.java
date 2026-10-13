@@ -152,6 +152,9 @@ public final class SevenQuestions {
      * @return 答完七题返回被看中的序列；还没答完返回 null
      */
     public static Sequence answer(ServerPlayer player, int choiceIndex) {
+        // 底色：这一票记下来（决定觉醒后走哪条血肉线，见 BloodlineBias）
+        com.habaiwa.goetyrevenant.common.flesh.BloodlineBias
+                .record(player, progress(player), choiceIndex);
         int index = progress(player);
         Question question = question(index);
         if (question == null || choiceIndex < 0 || choiceIndex >= question.choices().size()) {
@@ -178,7 +181,21 @@ public final class SevenQuestions {
                 best = s;
             }
         }
-        return best == null ? Sequence.CANDLE_KEEPER : best;
+        Sequence picked = best == null ? Sequence.CANDLE_KEEPER : best;
+
+        // **觉醒的同时定下血肉线** ——
+        // 用户 2026-10-11：「每个序列者觉醒后，血肉线都会走向其中一条。
+        // 不是选的，是你的**底色**决定的：向外要→异化 / 向内收→灵化 / 向下沉→硅化」。
+        // 底色由七道题顺带算出来（见 BloodlineBias）。只定一次，重进不会改。
+        if (!com.habaiwa.goetyrevenant.common.flesh.FleshProgress.defined(player)) {
+            com.habaiwa.goetyrevenant.common.flesh.FleshLine flesh =
+                    com.habaiwa.goetyrevenant.common.flesh.BloodlineBias.resolve(player);
+            if (flesh != null) {
+                com.habaiwa.goetyrevenant.common.flesh.FleshProgress.set(player, flesh, 0);
+            }
+            // flesh == null（三方向平票）→ 保持"未定"，不猜
+        }
+        return picked;
     }
 
     public static int score(ServerPlayer player, Sequence sequence) {
