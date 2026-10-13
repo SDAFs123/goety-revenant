@@ -113,10 +113,12 @@ public final class SoulClientEvents {
         if (!id.getNamespace().equals("goety") || !id.getPath().contains("soul")) {
             return;
         }
-        // 取消原版条的情形：
-        //   1) 灵魂状态（条上的数本来就不属于这缕魂），或
-        //   2) 跳井解锁之后 —— 这条 HUD 改由 SoulHudOverlay 画，好让它**随灵魂温度变色**
-        if (ClientSoulState.isSoul() || com.habaiwa.goetyrevenant.client.BodyClientState.unlocked()) {
+        // **只在灵魂状态下藏掉本体那条**（设计 §1284：我们那条也只在灵魂状态画）。
+        //
+        // 这里原本还挂了一个 `|| BodyClientState.unlocked()` —— 那是**七窍系统**的
+        // "跳哭泣之井解锁"（§391），和 HUD 无关，是我加的。后果是活人解锁之后
+        // 本体条被藏、我们那条又不画（灵魂状态之外都不画），等于把能量条弄没了。
+        if (ClientSoulState.isSoul()) {
             event.setCanceled(true);
         }
     }

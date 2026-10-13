@@ -70,29 +70,27 @@ public class SoulHudOverlay implements IGuiOverlay {
         //  而灵魂状态恰恰是最需要看它的时候（那就是唯一的血条）。
         // ------------------------------------------------------------------
         // ------------------------------------------------------------------
-        //  **三种情况都要画这条能量条**：
+        //  **只在灵魂状态下画这条能量条**（设计 §1284 原文：
+        //  「整块 HUD 只在 ClientSoulState.isSoul() 时画 —— 而那个标记是
+        //    服务端单独发给你自己的」）。
         //
-        //    ① 灵魂状态   —— 这条就是灵魂唯一的那条血
-        //    ② 正在附身   —— 挨打扣的是灵魂能量，不画出来玩家看不到它在掉
-        //    ③ 已解锁的活人 —— 它随灵魂温度变色，本体那张固定贴图做不到
+        //  这里踩过一次坑：条件原本写的是 if (!unlocked) return;
+        //  —— `unlocked` 是**七窍系统**的"跳哭泣之井解锁"（§391），和 HUD 无关。
+        //  后果是：灵魂状态 + 没跳井 → `SoulClientEvents` 把本体那条藏掉了、
+        //  我们这边又不画 → 右下角**什么都看不到**，而那条能量正是灵魂唯一的血。
         //
-        //  ② 靠 possessTicks 判断：服务端在附身开始时把它设成时长，每 tick 减一。
-        //  （客户端拿不到服务端的 isPossessing —— SoulSyncMessage 没带那个字段，
-        //    但带了这个倒计时，够用。）
+        //  （另：附身时会挨打扣灵魂能量，但设计没说附身时画不画。
+        //    这一版先严格按设计走 —— 只在灵魂状态画。）
         // ------------------------------------------------------------------
-        boolean soul = ClientSoulState.isSoul();
-        boolean possessing = ClientSoulState.possessTicks() > 0;
-        if (!soul && !possessing && !com.habaiwa.goetyrevenant.client.BodyClientState.unlocked()) {
+        if (!ClientSoulState.isSoul()) {
             return;
         }
 
         int x = width - BAR_WIDTH - MARGIN_RIGHT;
         int y = height - MARGIN_BOTTOM;
 
-        // 指针只在【灵魂状态】画 —— 附身时你已经找到身体了，不需要再指路。
-        if (soul) {
-            renderNeedle(graphics, minecraft, x + BAR_WIDTH / 2, y - NEEDLE_OFFSET);
-        }
+        // 指向身体的指针（这个类只在灵魂状态下会被调用）
+        renderNeedle(graphics, minecraft, x + BAR_WIDTH / 2, y - NEEDLE_OFFSET);
         renderEnergy(graphics, x, y);
     }
 
