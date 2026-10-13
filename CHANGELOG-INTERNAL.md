@@ -219,3 +219,34 @@ client/screen/tree/
 **所以：方法搬移一律改用 `edit` 工具逐块做。**
 `edit` 要求 `old_string` **唯一出现**，不唯一就报错 —— 这正好堵住了上面三类问题。
 脚本只用于"统计、扫描、验证"这类**只读**用途。
+
+
+### 附身机制逐条核对（2026-10-13，目标 ④）
+
+按设计 §4 的 12 条逐条对代码：
+
+| 设计条款 | 实现位置 | 状态 |
+|---|---|---|
+| §4.1 灵魂穿墙 | `Possession.enterSoulForm` `noPhysics` | ✓ |
+| §4.1 灵魂隐身 | 同上 `setInvisible` | ✓ |
+| §4.1 灵魂禁指令 | 事件拦截 8 处 | ✓ |
+| §4.2 可附身目标（标签） | `PossessProfile` + `possessable` 标签 | ✓ |
+| §4.3 契合度表 | `Attunement` | ✓ |
+| §4.3 时长 = 20min × 契合度 | `Possession` `soulDurationTicks() * attunement` | ✓ |
+| §4.4 亡灵白天燃烧 | `RevenantEvents:211` `Traits.undeadDaylight` | ✓ |
+| §4.4 亡灵能量恢复 25% | 同上 `Traits.limitUndeadSoulRegen` | ✓ |
+| §4.5 自身契合度惩罚 | `SoulData.penalizeSelfAttunement` | ✓ |
+| §4.6 图腾/方舟优先 | `RevenantEvents` `isCanceled` + `LOWEST` | ✓ |
+| §4.7 附身在别人身体里用不了聚晶 | `EmbeddedCasting:43` `isPossessing` | ✓ |
+| §4.7 灵魂状态禁止指令 | 事件拦截 | ✓ |
+
+**12/12 都有实现。**
+
+**⚠️ 核对方法的教训**：第一次搜 `BURN|burn` 得出"§4.4 没实现"是**误判** ——
+代码里叫 `undeadDaylight` / `limitUndeadSoulRegen`。
+**核对要按语义找，不能按自己猜的英文词找。**
+
+**另外记一条文档矛盾**：§4.5 写着「< 100% 时回到自己身体 → 只能待 20分钟×契合度，
+到点被挤出、重新留下一具尸体」，但代码里是 **永远彻底复活**（不设限、不会被弹出）。
+**以用户 2026-10-13 的原话为准**：**"我回自己的身体还不能做到和正常游玩一样吗"** ——
+限时弹出与"正常游玩"冲突，所以代码是对的，§4.5 那条已作废。
