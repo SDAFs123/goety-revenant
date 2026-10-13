@@ -138,7 +138,8 @@ public final class SoulForm {
         com.habaiwa.goetyrevenant.common.soul.LingHua.forceOff(player);
         // 灵魂 = **别人完全看不见**（invisible 就够，不渲染）；
         // 视角 = 旁观者一样：穿墙（noPhysics）+ 悬浮失重（noGravity）+ 自由飞行
-        // **不要 broadcastSoulAppearance** —— 那会让人半透明可见，方向反了
+        // 灵魂应当是**完全看不见**（invisible 就够，不渲染）。
+        // （曾经有过一条 SoulAppearanceMessage "半透明可见"，方向是反的，已删除）
         player.noPhysics = true;
         player.setInvisible(true);
         player.setNoGravity(true);

@@ -70,11 +70,9 @@ public final class RevenantNetwork {
                 .decoder(SoulSyncMessage::decode)
                 .consumerMainThread(SoulSyncMessage::handle)
                 .add();
-        CHANNEL.messageBuilder(SoulAppearanceMessage.class, 9, NetworkDirection.PLAY_TO_CLIENT)
-                .encoder(SoulAppearanceMessage::encode)
-                .decoder(SoulAppearanceMessage::decode)
-                .consumerMainThread(SoulAppearanceMessage::handle)
-                .add();
+        // id 9 曾经是 SoulAppearanceMessage（"灵魂半透明可见"）——
+        // 方向是反的（灵魂应当**完全看不见**，见 SoulForm 的注释），从未启用，已删除。
+        // id 号不补，留空。
         CHANNEL.messageBuilder(ConverterQueryMessage.class, 10, NetworkDirection.PLAY_TO_SERVER)
                 .encoder(ConverterQueryMessage::encode)
                 .decoder(ConverterQueryMessage::decode)
@@ -135,11 +133,6 @@ public final class RevenantNetwork {
                 .decoder(SoulOutMessage::decode)
                 .consumerMainThread(SoulOutMessage::handle)
                 .add();
-    }
-
-    /** 广播「某玩家进入/退出灵魂状态」给所有人（用于灵魂外观渲染）。 */
-    public static void broadcastSoulAppearance(ServerPlayer player, boolean soul) {
-        CHANNEL.send(PacketDistributor.ALL.noArg(), new SoulAppearanceMessage(player.getUUID(), soul));
     }
 
     /** **叫某个客户端放一个音效**（按 id，客户端自己去 sounds.json 里找）。 */

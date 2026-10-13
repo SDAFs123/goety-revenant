@@ -143,10 +143,6 @@ public final class ComboChain {
     }
 
     /** 主动清掉这条链（死亡 / 退出灵魂状态时用）。 */
-    public static void clear(ServerPlayer player) {
-        CompoundTag tag = player.getPersistentData();
-        tag.putInt(KEY_CHAIN, 0);
-        tag.putInt(KEY_CHAIN_TICK, 0);
-        tag.putInt(KEY_CAST_TICK, 0);
-    }
+    // 清空链的方法删了 —— 链本来就会随 comboWindow 超时自然重开（见 onMainHit），
+    // 没有任何调用者需要一个手动清空入口。
 }
