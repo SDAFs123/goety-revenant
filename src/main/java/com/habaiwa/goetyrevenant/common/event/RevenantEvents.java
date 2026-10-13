@@ -323,7 +323,13 @@ public final class RevenantEvents {
         if (!(event.getEntity() instanceof ServerPlayer player)) {
             return;
         }
-        if (!SoulData.isSoul(player) || SoulData.isPossessing(player)) {
+        // **不要在这里排除"附身中"** ——
+        // 之前写的是 if (!isSoul || isPossessing) return;，那个 || 是错的：
+        // 附身只是"魂进了别人的身体"，你还是魂，挨打扣的仍然该是灵魂能量。
+        // 排除掉它的后果是附身之后掉血、灵魂能量一点不动 ——
+        // 而设计里【灵体状态的那条血就是灵魂能量】（PLAN §7.7.1 需求 4），
+        // 附身期间灵魂能量也一直是活的资源（§4.4：附身亡灵能量恢复压到 25%）。
+        if (!SoulData.isSoul(player)) {
             return;
         }
         event.setCanceled(true);
