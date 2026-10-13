@@ -96,6 +96,8 @@ public class TreeScreen extends Screen {
     private boolean growthAnnounced = false;
     /** 打过的帧数（前 20 帧报告渲染耗时）。 */
     private int frameCount = 0;
+    /** 生长动画演完之后，两张种子图是不是已经放掉了（只放一次）。 */
+    private boolean seedReleased = false;
 
     // ---- 视口：可以上下左右看这张比屏幕大的图 ----
     /** 视口左上角在内容图里的位置。 */
@@ -378,6 +380,23 @@ public class TreeScreen extends Screen {
             this.seedOpen.drawView(graphics, 1.0F, open * (1.0F - shed), this.viewX, this.viewY);
             this.tree.drawView(graphics, sprout, sprout,
                     this.viewX, this.viewY);
+            // ------------------------------------------------------------------
+            //  **动画演完就把两张种子图放掉。**
+            //
+            //  种子图只在两个地方需要：未觉醒时一直看着的那粒种子，
+            //  和觉醒动画里那几秒的破开过程。动画一旦演完，它们就是两份
+            //  白白占着的全尺寸 RGBA 图（一张就是 32 MiB 量级）。
+            //
+            //  放掉是安全的：release() 会把尺寸也清掉，下次真要用到会自然重建。
+            //  注意条件是"动画已经走完"（grow >= 1）而且界面确实是在播动画，
+            //  不是"未觉醒"那种要一直显示种子的情况。
+            // ------------------------------------------------------------------
+            if (grow >= 1.0F && !this.seedReleased) {
+                this.seedReleased = true;
+                this.seed.release();
+                this.seedOpen.release();
+                LOG.info("[REVENANT-T] 生长动画结束，已释放两张种子图");
+            }
         } else {
             // 平时就按视口画 —— 屏幕只是这张大图的一个窗口
             this.tree.drawView(graphics, 1.0F, this.viewX, this.viewY);
@@ -428,7 +447,8 @@ public class TreeScreen extends Screen {
                             + "  │  " + this.backdrop.status()
                             + "  │  视口 " + String.format("%.2f", top)
                             + "~" + String.format("%.2f", bottom)
-                            + "  │  zoom " + String.format("%.2f", this.zoom)),
+                            + "  │  zoom " + String.format("%.2f", this.zoom)
+                            + "  │  " + this.tree.inkReport()),
                     10, this.height - 12, 0xFF88A0A8, false);
         }
         graphics.drawString(this.font,

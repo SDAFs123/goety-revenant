@@ -8,6 +8,15 @@ import net.minecraft.resources.ResourceLocation;
 
 /** 客户端记录"某玩家附身了哪个生物"（渲染成生物时用）。空 = 没有。 */
 public final class PossessedAppearance {
+    /**
+     * **断线清理** —— 这些是静态字段，退出世界后不清干净，
+     * 下一个存档/服务器在有效同步包到达之前会继续用旧的 附身外观。
+     */
+    public static void reset() {
+        POSSESSED.clear();
+        DATA.clear();
+    }
+
     private static final Map<UUID, ResourceLocation> POSSESSED = new HashMap<>();
     /** 附身生物自己的存档数据 —— 变体都在里面。 */
     private static final Map<UUID, net.minecraft.nbt.CompoundTag> DATA = new HashMap<>();

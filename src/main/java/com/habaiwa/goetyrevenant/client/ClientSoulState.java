@@ -2,6 +2,22 @@ package com.habaiwa.goetyrevenant.client;
 
 /** 客户端记着服务端下发的「回魂灵魂状态」及其数值。 */
 public final class ClientSoulState {
+    /**
+     * **断线清理** —— 这些是静态字段，退出世界后不清干净，
+     * 下一个存档/服务器在有效同步包到达之前会继续用旧的 灵魂状态。
+     */
+    public static void reset() {
+        soul = false;
+        attunement = 1.0F;
+        energy = 0;
+        soulTicks = 0;
+        possessTicks = 0;
+        bodyDistance = -1;
+        bodyBearing = Float.NaN;
+        energyMax = 10000;
+        drifting = false;
+    }
+
     private static boolean soul;
     private static float attunement = 1.0F;
     private static int energy;

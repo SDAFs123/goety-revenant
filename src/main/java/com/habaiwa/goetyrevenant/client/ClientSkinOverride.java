@@ -10,6 +10,14 @@ public final class ClientSkinOverride {
     public record Skin(String value, String signature) {
     }
 
+    /**
+     * **断线清理** —— 这些是静态字段，退出世界后不清干净，
+     * 下一个存档/服务器在有效同步包到达之前会继续用旧的 皮肤覆盖。
+     */
+    public static void reset() {
+        OVERRIDES.clear();
+    }
+
     private static final Map<UUID, Skin> OVERRIDES = new HashMap<>();
 
     private ClientSkinOverride() {

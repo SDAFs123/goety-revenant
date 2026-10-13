@@ -6,6 +6,17 @@ import javax.annotation.Nullable;
 /** 客户端暂存的服务端改造状态（身体界面打开时读它渲染）。 */
 public final class BodyClientState {
     @Nullable
+    /**
+     * **断线清理** —— 这些是静态字段，退出世界后不清干净，
+     * 下一个存档/服务器在有效同步包到达之前会继续用旧的 玩家状态。
+     */
+    public static void reset() {
+        state = null;
+        // seenStage 尤其重要：不清的话，新存档里"第一次看到这个阶"会被当成已经看过，
+        // 生长动画莫名不播。
+        seenStage = Integer.MIN_VALUE;
+    }
+
     private static BodyStateMessage state;
 
     private BodyClientState() {

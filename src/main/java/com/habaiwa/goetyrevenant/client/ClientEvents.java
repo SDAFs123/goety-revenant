@@ -53,10 +53,54 @@ public final class ClientEvents {
     public static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(ModEntities.REVENANT.get(), RevenantRenderer::new);
         event.registerEntityRenderer(ModEntities.CORPSE.get(), CorpseRenderer::new);
-        // 覆写原版玩家渲染器，好让「附身他人」能显示对方的皮肤。
-        // EntityType.PLAYER 是 EntityType<Player>，而玩家渲染器的泛型是 AbstractClientPlayer，这里转换一次。
-        @SuppressWarnings("unchecked")
-        EntityType<AbstractClientPlayer> playerType = (EntityType<AbstractClientPlayer>) (EntityType<?>) EntityType.PLAYER;
-        event.registerEntityRenderer(playerType, context -> new RevenantPlayerRenderer(context, false));
+        // **注意：玩家的渲染器不能在这里注册。**
+        // 之前这里做过 registerEntityRenderer(EntityType.PLAYER, ...) 外加一次泛型强转 ——
+        // 那条路走不通：玩家的渲染走的是【皮肤渲染器映射】（default / slim 两套），
+        // 普通实体类型注册分发不到那里。强转泛型也解决不了分发机制的问题。
+        // 玩家渲染的接入改在下面这个事件里做。
+    }
+
+    /**
+     * **借一次渲染上下文** —— 之后自己造玩家渲染器要用它。
+     *
+     * <p>Forge 没有提供"替换玩家渲染器"的接口（AddLayers 只给 getSkin() 这个 getter，
+     * 内部的 skinMap 是 private final）。所以我们不去替换它，
+     * 而是从这里借它的 Context，自己造渲染器、在需要接管的时候自己调用。</p>
+     */
+    @SubscribeEvent
+    public static void onAddLayers(
+            net.minecraftforge.client.event.EntityRenderersEvent.AddLayers event) {
+        com.habaiwa.goetyrevenant.client.render.RevenantPlayerRenderer.captureContext(
+                event.getContext());
+    }
+
+    /**
+     * **玩家渲染的接管点** —— 只在需要的时候介入。
+     *
+     * <p>绝大多数玩家（没被附身、也不是别人的容器）走到第一行就返回了，
+     * 完全走原版那条路，一点不受影响。只有两种情况下我们才接管：</p>
+     * <ul>
+     *   <li>这个玩家被附身了生物 → 要画成那个生物</li>
+     *   <li>这个玩家被附身了别人 → 要用对方的皮肤</li>
+     * </ul>
+     *
+     * <p>接管是"取消原版 + 我们自己调渲染器"。<b>代价</b>：其他模组给玩家加的渲染层
+     * （护甲以外的那些附加层）在这一帧也不会被画 —— 这是替换渲染的固有代价，
+     * 所以只对"确实变了样子的玩家"这么做。</p>
+     */
+    @SubscribeEvent
+    public static void onRenderPlayer(net.minecraftforge.client.event.RenderPlayerEvent.Pre event) {
+        net.minecraft.world.entity.player.Player rawPlayer = event.getEntity();
+        if (!(rawPlayer instanceof net.minecraft.client.player.AbstractClientPlayer player)) {
+            return;
+        }
+        if (!com.habaiwa.goetyrevenant.client.render.RevenantPlayerRenderer.needsOverride(player)) {
+            return;   // 不需要接管 → 原版自己画
+        }
+        event.setCanceled(true);
+        com.habaiwa.goetyrevenant.client.render.RevenantPlayerRenderer renderer =
+                com.habaiwa.goetyrevenant.client.render.RevenantPlayerRenderer.forPlayer(player);
+        renderer.render(player, player.getYRot(), event.getPartialTick(),
+                event.getPoseStack(), event.getMultiBufferSource(), event.getPackedLight());
     }
 }

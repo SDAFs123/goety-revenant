@@ -286,8 +286,86 @@ public final class TreeTexture {
     private Random rng;
     private int upgradeLeafCounter = 0;
 
-    /** 后台做好、等着主线程取走的那一份。 */
-    private volatile TreeTexture pendingBuild;
+    // ======================================================================
+    //  **请求号与结果交接** —— 修掉审查指出的竞态。
+    //
+    //  之前是"开线程 → 做完把结果赋给一个 volatile 字段"。volatile 只保证
+    //  【看得见】，不保证【顺序对】：
+    //
+    //      A 先启动 → B 后启动 → B 先做完并显示 → A 后做完，把画面覆盖回旧状态
+    //
+    //  而且被覆盖掉的那个结果，它的 NativeImage 没人关闭（原生内存泄漏）。
+    //
+    //  现在每次请求发一个号；线程做完先核对"我还是最新的那个号吗"，
+    //  不是的话就把自己的图像关掉、直接丢弃。
+    //  交接本身用 AtomicReference 的 getAndSet —— "读取后清空"不会再丢东西。
+    // ======================================================================
+    /** 请求号：每次 ensure 递增，只有最新那个号的结果会被采纳。 */
+    private final java.util.concurrent.atomic.AtomicLong requestSeq =
+            new java.util.concurrent.atomic.AtomicLong();
+
+    // ======================================================================
+    //  **同时只允许一个生成线程** —— 顺带把中间的请求合并掉。
+    //
+    //  审查指出：窗口尺寸频繁变化时会连续开好几个线程，把运算搬到后台
+    //  只是改善了主线程响应，并没有控制总 CPU 和内存负担。
+    //
+    //  现在这样：正在跑的时候再来请求，不新开线程，只把"还想要什么"记下来；
+    //  跑完由 takePending 补一次 —— 所以拖窗口时中间那些尺寸根本不会真的生成，
+    //  只有最后稳定下来的那个会被做出来。
+    // ======================================================================
+    // ----------------------------------------------------------------------
+    //  **树层实际画到东西的包围盒** —— 先测量，再决定要不要真裁。
+    //
+    //  "裁掉透明区"能省多少内存，取决于树在内容图里占多大比例：
+    //  占 30% 就值得改绘制映射，占 70% 就不划算还容易错位。
+    //  所以先量出来（这一步只记录，不改任何绘制行为）。
+    // ----------------------------------------------------------------------
+    /** 有像素写入的范围（x0/y0 含，x1/y1 不含）；x1<=x0 表示还没写过。 */
+    private int inkX0 = Integer.MAX_VALUE;
+    private int inkY0 = Integer.MAX_VALUE;
+    private int inkX1 = Integer.MIN_VALUE;
+    private int inkY1 = Integer.MIN_VALUE;
+
+    /** 记一下"这个像素被写过"。 */
+    private void ink(int x, int y) {
+        if (x < this.inkX0) {
+            this.inkX0 = x;
+        }
+        if (y < this.inkY0) {
+            this.inkY0 = y;
+        }
+        if (x + 1 > this.inkX1) {
+            this.inkX1 = x + 1;
+        }
+        if (y + 1 > this.inkY1) {
+            this.inkY1 = y + 1;
+        }
+    }
+
+    /** 有内容的那块占整张图的百分比（诊断用）。 */
+    public String inkReport() {
+        if (this.inkX1 <= this.inkX0) {
+            return "（还没画东西）";
+        }
+        long full = (long) this.width * this.height;
+        long used = (long) (this.inkX1 - this.inkX0) * (this.inkY1 - this.inkY0);
+        return String.format("内容区 %dx%d = 整张的 %.1f%%",
+                this.inkX1 - this.inkX0, this.inkY1 - this.inkY0, used * 100.0D / full);
+    }
+
+    /** 有没有生成线程在跑。 */
+    private final java.util.concurrent.atomic.AtomicBoolean busy =
+            new java.util.concurrent.atomic.AtomicBoolean();
+    /** 在跑期间收到的"还想要什么"（-1 = 没有排队的请求）。 */
+    private int wantW = -1;
+    private int wantH = -1;
+    private int wantStage = 0;
+    private int wantSeq = 0;
+    private long wantStamp = 0L;
+    /** 后台做好、等着主线程取走的那一份（原子交接）。 */
+    private final java.util.concurrent.atomic.AtomicReference<TreeTexture> pendingRef =
+            new java.util.concurrent.atomic.AtomicReference<>();
     /** 正在后台做的那一组参数（避免重复开线程）。 */
     private volatile int jobW = -1;
     private volatile int jobH = -1;
@@ -433,15 +511,28 @@ public final class TreeTexture {
             this.jobStage = 0;
             this.jobSeq = 0;
             this.jobStamp = 0L;
+            if (!this.busy.compareAndSet(false, true)) {
+                // 已经有线程在跑 —— 只记下"还想要什么"，别再造一个
+                this.wantW = width;
+                this.wantH = height;
+                this.wantStage = 0;
+                this.wantSeq = 0;
+                this.wantStamp = 0L;
+                return;
+            }
             final TreeTexture job = new TreeTexture(this.texName, true);
             final int w = width;
             final int h = height;
+            final long mySeq = this.requestSeq.incrementAndGet();
             Thread worker = new Thread(() -> {
                 try {
                     job.buildInto(w, h, 0, 0, 0L, this.zoom);
-                    this.pendingBuild = job;
-                } catch (Throwable ignored) {
+                    this.publish(job, mySeq);
+                } catch (Throwable t) {
+                    job.discard();
                     this.jobW = -1;
+                } finally {
+                    this.busy.set(false);   // 放行 —— 排队的那一次会在 takePending 里补上
                 }
             }, "goety-revenant-terrain");
             worker.setDaemon(true);
@@ -471,15 +562,28 @@ public final class TreeTexture {
         this.jobStamp = stamp;
         // 临时实例：在后台把图做出来，主线程再搬（两个实例注册的是同一个 id，
         // 但临时实例不注册 —— 注册只在 takePending 里做一次）
+        if (!this.busy.compareAndSet(false, true)) {
+            // 已经有线程在跑 —— 记下这一组参数，等它做完补一次
+            this.wantW = width;
+            this.wantH = height;
+            this.wantStage = stage;
+            this.wantSeq = sequence;
+            this.wantStamp = stamp;
+            return;
+        }
         final TreeTexture job = new TreeTexture(this.texName, false);
         final int w = width;
         final int h = height;
+        final long mySeq = this.requestSeq.incrementAndGet();
         Thread worker = new Thread(() -> {
             try {
                 job.buildInto(w, h, stage, sequence, stamp, this.zoom);
-                this.pendingBuild = job;
-            } catch (Throwable ignored) {
+                this.publish(job, mySeq);
+            } catch (Throwable t) {
+                job.discard();
                 this.jobW = -1;
+            } finally {
+                this.busy.set(false);
             }
         }, "goety-revenant-tree");
         worker.setDaemon(true);
@@ -519,12 +623,84 @@ public final class TreeTexture {
         return name + " 就绪";
     }
 
+    /**
+     * **交付一个生成结果** —— 只有仍然是最新请求时才被采纳。
+     *
+     * <p>不是最新的（说明玩家又改了状态/尺寸，已经发了新请求）→ 把自己关掉丢弃。
+     * 被顶掉的那一份也要关掉，否则原生内存会一直涨。</p>
+     */
+    private void publish(TreeTexture job, long seq) {
+        if (this.requestSeq.get() != seq) {
+            job.discard();          // 过期结果：关掉，别覆盖别人
+            return;
+        }
+        TreeTexture old = this.pendingRef.getAndSet(job);
+        if (old != null) {
+            old.discard();          // 上一份还没被取走就被顶掉了：同样要关
+        }
+    }
+
+    /**
+     * **把这一层整个放掉** —— 图关掉、纹理注销、尺寸清掉。
+     *
+     * <p>和 discard() 的区别：那个是"丢掉一个还没用上的临时结果"，
+     * 这个是"这一层现在不需要了，把它占的原生内存和显存都还回去"。
+     * 清掉尺寸之后，下次真要用到它会自然重新生成 —— 状态是自洽的。</p>
+     *
+     * <p>用在那些只有一小段时间需要的层上：种子、裂开的种子。
+     * 树和地层一直要用，不能这么放。</p>
+     */
+    public void release() {
+        try {
+            if (this.texture != null) {
+                // 注销 + 关贴图。只 close 不注销的话，纹理管理器里会留一条死引用。
+                Minecraft.getInstance().getTextureManager().release(this.tex);
+                this.texture.close();
+            }
+        } catch (Throwable ignored) {
+            // 已经没了就算了
+        }
+        this.texture = null;
+        if (this.image != null) {
+            this.image.close();
+        }
+        this.image = null;
+        this.viewW = -1;
+        this.viewH = -1;
+        this.jobW = -1;
+        this.jobH = -1;
+    }
+
+    /** **释放这一份持有的原生图像**（未注册到纹理管理器的那些）。 */
+    private void discard() {
+        if (this.image != null) {
+            this.image.close();
+            this.image = null;
+        }
+        if (this.texture != null) {
+            this.texture.close();
+            this.texture = null;
+        }
+    }
+
     private void takePending() {
-        TreeTexture job = this.pendingBuild;
+        // **原子交换**：取走的同时清空，中间不会有写入被丢掉
+        // （之前是 "读字段 → 再赋 null"，两步之间写进来的结果会消失）
+        TreeTexture job = this.pendingRef.getAndSet(null);
+        // 生成期间玩家又改了状态/尺寸的话，这里补一次（外层 ensure 的缓存判断
+        // 会让"其实已经是对的了"这种情况直接返回，不会白做）
+        if (this.wantW > 0) {
+            int w = this.wantW;
+            int h = this.wantH;
+            int st = this.wantStage;
+            int sq = this.wantSeq;
+            long stamp = this.wantStamp;
+            this.wantW = -1;
+            this.ensure(w, h, st, sq, stamp, this.zoom);
+        }
         if (job == null) {
             return;
         }
-        this.pendingBuild = null;
         // 搬生成结果（含槽位 / 叶子 / 三条路的节点）
         this.viewW = job.viewW;
         this.viewH = job.viewH;
@@ -553,7 +729,10 @@ public final class TreeTexture {
             this.texture.close();
         }
         long upT = System.nanoTime();
+        // **所有权转移**：图交接给 this 之后，job 就不能再持有它了。
+        // 否则 job 万一被回收/丢弃时会把这张【已经在用的】图关掉 —— 界面直接黑掉。
         this.image = job.image;
+        job.image = null;
         this.texture = new DynamicTexture(this.image);
         Minecraft.getInstance().getTextureManager().register(this.tex, this.texture);
         LOG.info("[REVENANT-T] 上传纹理 " + this.texName + " "
@@ -758,7 +937,8 @@ public final class TreeTexture {
         this.mark("树");
         this.soulMotes();
         this.mark("叶");
-        LOG.info("[REVENANT-T] tree: " + String.join(" ", this.timings));
+        LOG.info("[REVENANT-T] tree: " + String.join(" ", this.timings)
+                + "  |  " + this.inkReport());
     }
 
     /* ---- ① 土壤 -------------------------------------------------------- */
@@ -3424,6 +3604,9 @@ public final class TreeTexture {
     }
 
     private void put(int x, int y, int abgr) {
+        // 顺手记一下有内容的范围（"裁透明区"值不值得做的依据）。
+        // 这里是所有写入的最底层，加 4 次整数比较，JIT 会把它优化掉。
+        this.ink(x, y);
         org.lwjgl.system.MemoryUtil.memPutInt(
                 this.pixels + ((long) y * this.stride + x) * 4L, abgr);
     }

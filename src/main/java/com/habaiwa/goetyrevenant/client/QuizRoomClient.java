@@ -13,6 +13,16 @@ package com.habaiwa.goetyrevenant.client;
  * <p>所以不是白屏糊脸，而是"越落越亮"。</p>
  */
 public final class QuizRoomClient {
+    /**
+     * **断线清理** —— 这些是静态字段，退出世界后不清干净，
+     * 下一个存档/服务器在有效同步包到达之前会继续用旧的 问答房间状态。
+     */
+    public static void reset() {
+        inside = false;
+        darkness = 0.0F;
+        darkTarget = 0.0F;
+    }
+
     private static boolean inside = false;
     /** 暗到几分（1 = 全黑，0 = 透亮）。 */
     private static float darkness = 0.0F;
