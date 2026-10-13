@@ -305,7 +305,11 @@ public final class ScytheCompat {
     public static void onAnvil(net.minecraftforge.event.AnvilUpdateEvent event) {
         ItemStack left = event.getLeft();
         ItemStack right = event.getRight();
-        if (!isScythe(left) || isNativeScythe(left) || right.isEmpty() || event.getPlayer() == null) {
+        // **两边的原生镰刀也要能互附** ——
+        // 用户 2026-09-27：「让灵灾镰刀也能共享，双方是互通的，所以需要两遍都看进行兼容」。
+        // 所以这里【不能】排除 isNativeScythe(left)：Malum 镰刀要能上 Goety 附魔，
+        // Goety 镰刀也要能上 Malum 附魔。
+        if (!isScythe(left) || right.isEmpty() || event.getPlayer() == null) {
             return;
         }
 
@@ -341,10 +345,36 @@ public final class ScytheCompat {
 
     /** 剑系附魔（能不能附到钻石剑上）+ 时运。 */
     private static boolean allowedOnScythe(Enchantment enchantment) {
+        if (isCrossModEnchantment(enchantment)) {
+            return true;
+        }
         if (enchantment == net.minecraft.world.item.enchantment.Enchantments.BLOCK_FORTUNE) {
             return true;
         }
         return enchantment.canEnchant(new ItemStack(net.minecraft.world.item.Items.DIAMOND_SWORD));
+    }
+
+    /**
+     * **两方的"独特附魔"** —— 允许互相附到对方的镰刀上。
+     *
+     * <p>命名空间是 {@code malum} 或 {@code goety} 的都放行，**除了用户点名排除的**：</p>
+     *
+     * <ul>
+     *   <li>{@code malum:spirit_plunder}（精魂劫掠）—— 用户 2026-09-27 明确要求
+     *       「灵灾的附魔这个附魔**不允许附魔出来**」。它的效果由我们的
+     *       "收割 = +20% 灵魂能量获取"接管（见 {@link MalumCompat}）。</li>
+     * </ul>
+     */
+    private static boolean isCrossModEnchantment(Enchantment enchantment) {
+        ResourceLocation id = BuiltInRegistries.ENCHANTMENT.getKey(enchantment);
+        if (id == null) {
+            return false;
+        }
+        String ns = id.getNamespace();
+        if (!ns.equals(MalumCompat.MALUM) && !ns.equals("goety")) {
+            return false;
+        }
+        return !id.getPath().equals("spirit_plunder");
     }
 
     /**

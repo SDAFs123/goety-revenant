@@ -12,6 +12,22 @@
     {
       "id": "goety:death_scythe",
       "required": false
+    },
+    {
+      "id": "malum:crude_scythe",
+      "required": false
+    },
+    {
+      "id": "malum:soul_stained_steel_scythe",
+      "required": false
+    },
+    {
+      "id": "malum:creative_scythe",
+      "required": false
+    },
+    {
+      "id": "born_in_chaos_v1:nightmare_scythe",
+      "required": false
     }
   ]
 }

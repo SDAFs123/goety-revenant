@@ -330,3 +330,55 @@ RevenantEvents   456 →  85 行  (−81%)
 **现在能量条会在三种情况下都画**：
 ① 灵魂状态（唯一的那条血）② 正在附身（挨打扣的就是它）③ 已解锁的活人（要随灵魂温度变色）。
 指针只在①画 —— 附身时你已经找到身体了。
+
+
+### 灵灾 × 诡厄巫法：镰刀附魔互通（2026-10-14）
+
+**用户需求**（2026-09-27 首次提出，2026-10-14 重申）：
+「我需要让两个模组的联动附魔可以做到互通，**两方的镰刀都能附魔对面的镰刀独特附魔**」
+
+#### 反编译查证的结论（关键）
+
+**Malum 的四个自定义附魔类别全是【标签判定】，不是类判定**：
+
+```java
+// com/sammy/malum/registry/common/item/EnchantmentRegistry
+SCYTHE_ONLY                 = create("scythe_only",   i -> i.is(ItemTagRegistry.SCYTHE))              // #malum:scythe
+STAFF_ONLY                  = create("staff_only",    i -> i.is(ItemTagRegistry.STAFF))               // #malum:staff
+SOUL_SHATTER_CAPABLE_WEAPON = create(..., i -> i.is(ItemTagRegistry.SOUL_HUNTER_WEAPON))              // #malum:soul_hunter_weapon
+MAGIC_CAPABLE_WEAPON        = create(..., i -> i.is(ItemTagRegistry.MAGIC_CAPABLE_WEAPON))
+```
+
+**→ 所以 Malum 侧一个数据包就能打通，不需要 Mixin。**
+
+**Goety 侧不同**：`SoulEaterEnchantment` 用的是**原版 `EnchantmentCategory.WEAPON`**
+（判定 `item instanceof WeaponItem`）—— **标签对它无效**，所以反向要靠铁砧。
+
+#### 已做
+
+**① 数据包（4 个标签文件）** —— 让 Goety 镰刀获得 Malum 的"镰刀身份"：
+
+| 文件 | 作用 |
+|---|---|
+| `data/malum/tags/items/scythe.json` | 缚灵 / 舞刃 / 飞腾 / 回旋 → 能上我们的镰刀 |
+| `data/malum/tags/items/soul_hunter_weapon.json` | 精魂收割类附魔 |
+| `data/malum/tags/items/magic_capable_weapon.json` | 魔法系附魔 |
+| `data/forge/tags/items/tools/swords.json` | 把 Malum 镰刀标成"剑"（尽力而为） |
+
+七把镰刀全部收录：`goety:dark_scythe` / `dark_metal_scythe` / `death_scythe` ·
+`malum:crude_scythe` / `soul_stained_steel_scythe` / `creative_scythe` ·
+`born_in_chaos_v1:nightmare_scythe`（都带 `required: false`，缺席不报错）
+
+**② 铁砧放开**（`ScytheCompat.onAnvil`）：
+
+- **删掉 `!isNativeScythe(left)` 限制** —— 原来两边的原生镰刀被排除在铁砧互附之外，那正是用户要的互通
+- **新增 `isCrossModEnchantment`**：命名空间是 `malum` 或 `goety` 的附魔一律放行，
+  **唯独排除 `malum:spirit_plunder`（精魂劫掠）** —— 用户 2026-09-27 明确要求
+  「灵灾的附魔这个附魔**不允许附魔出来**」，它的效果由我们的"+20% 灵魂能量获取"接管
+
+#### 双向现状
+
+| 方向 | 附魔台 | 铁砧 |
+|---|---|---|
+| **Malum 附魔 → Goety 镰刀** | ✅ 数据包已打通 | ✅ |
+| **Goety 附魔 → Malum 镰刀** | ⚠️ 取决于 Malum 镰刀是否 `WeaponItem`（反编译未取得该类，待实测） | ✅ 已打通 |
