@@ -217,6 +217,37 @@ public abstract class TreeCanvas {
     /** 当前阶数（决定树长多大）—— 树、根、种子都要读它。 */
     protected int stage = -2;
 
+    /* ---- 树的参数与绘制状态（树与叶共用）---- */
+    /**
+     * **四族被动的代表色** —— 叶子靠它来说话，不用写字。
+     *
+     * <p>顺序和 {@code UpgradeType.Group} 一致：魂 / 战 / 连携 / 神识。
+     * 一个槽选了哪一族，它对应的那片叶就染成那一族的颜色；
+     * 族内选的是第几个（1/2/3）则表现为叶片<b>越来越亮、越来越大</b>，
+     * 第三档还带一圈光晕。于是"选了什么都长在叶子上"。</p>
+     */
+    protected static final int[] FAMILY_COLORS = {
+            0xFF52E8DC,   // 魂：魂青
+            0xFFC02030,   // 战：血红
+            0xFFE08030,   // 连携：焰橙
+            0xFF9060D0,   // 神识：幽紫
+    };
+    /** 一级枝数量。 */
+    protected static final int[] BRANCHES = {0, 2, 4, 6};
+    /** 分叉层级。 */
+    protected static final int[] LEVELS = {0, 2, 3, 4};
+    /** 叶簇数量。 */
+    protected static final int[] CLUSTERS = {2, 6, 11, 16};
+    protected static final int MAX_UPGRADE_LEAF =
+            com.habaiwa.goetyrevenant.common.body.UpgradeSlots.COUNT;
+    protected static final float LENGTH_RATIO = 0.74F;
+    protected static final int[] KIDS = {0, 3, 3, 2, 2};
+    /** 分叉点的高度比（树高的多少）。 */
+    protected static final float FORK_T = 0.42F;
+    protected int upgradeLeafCounter = 0;
+    /** 这棵树的树冠偏向（每个存档固定，让同一棵树长得有自己的样子）。 */
+    protected float canopyBias;
+
     /** 叶色阶（暗 → 亮）。 */
     protected static final int[] LEAF = {
             0xFF0C2A22, 0xFF10402F, 0xFF16543B, 0xFF1D6A49, 0xFF278059,
