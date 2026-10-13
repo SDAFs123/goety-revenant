@@ -69,15 +69,27 @@ public class SoulHudOverlay implements IGuiOverlay {
         //  之前只有一个 unlocked 条件，于是没跳井的玩家变成灵魂后看不到能量条 ——
         //  而灵魂状态恰恰是最需要看它的时候（那就是唯一的血条）。
         // ------------------------------------------------------------------
+        // ------------------------------------------------------------------
+        //  **三种情况都要画这条能量条**：
+        //
+        //    ① 灵魂状态   —— 这条就是灵魂唯一的那条血
+        //    ② 正在附身   —— 挨打扣的是灵魂能量，不画出来玩家看不到它在掉
+        //    ③ 已解锁的活人 —— 它随灵魂温度变色，本体那张固定贴图做不到
+        //
+        //  ② 靠 possessTicks 判断：服务端在附身开始时把它设成时长，每 tick 减一。
+        //  （客户端拿不到服务端的 isPossessing —— SoulSyncMessage 没带那个字段，
+        //    但带了这个倒计时，够用。）
+        // ------------------------------------------------------------------
         boolean soul = ClientSoulState.isSoul();
-        if (!soul && !com.habaiwa.goetyrevenant.client.BodyClientState.unlocked()) {
+        boolean possessing = ClientSoulState.possessTicks() > 0;
+        if (!soul && !possessing && !com.habaiwa.goetyrevenant.client.BodyClientState.unlocked()) {
             return;
         }
 
         int x = width - BAR_WIDTH - MARGIN_RIGHT;
         int y = height - MARGIN_BOTTOM;
 
-        // 灵魂：多一根指向身体的指针；活人：只有条。
+        // 指针只在【灵魂状态】画 —— 附身时你已经找到身体了，不需要再指路。
         if (soul) {
             renderNeedle(graphics, minecraft, x + BAR_WIDTH / 2, y - NEEDLE_OFFSET);
         }
