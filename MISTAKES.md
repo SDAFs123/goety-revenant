@@ -365,3 +365,51 @@ BloodVessels.isDevourPedestal(level, pos)  // 判我们的吞噬基座
 2. **按时间读完**：早期定义形态，晚期补细节；晚期一句话可能是**引用**别的模组
 3. **代码侧按语义搜**（要"血管连接"就去搜 `vessel`/`pedestal`/`BFS`，不是只看 `BloodVesselBlock`）
 4. **查完再动手**，并把"依据哪条、哪个日期"写进 CHANGELOG
+
+
+---
+
+## M-015 Mixin 没 refmap 时，方法名必须写【混淆名】（否则静默失效）
+
+**时间**：2026-10-14
+
+**症状**：改完 Mixin、构建通过、jar 里也有 `EnchantmentMixin.class` 和 `mixins.json`，
+**但游戏里毫无变化** —— 灵灾附魔照样上不了诡厄巫法镰刀。
+
+**原因**：没有 refmap。本机构建**离线**，装不了 `org.spongepowered.mixin` 那个 Gradle 插件
+（它负责生成 refmap），缓存里也没有它（查过 `~/.gradle/caches` 和项目 `.gradle-home`，都是空的）。
+
+没有 refmap 时，Mixin 会拿**你写的字符串**去**运行时那个类**里找方法。
+而运行时的方法名是**混淆名**（生产环境）—— 所以：
+
+```java
+@Inject(method = "canEnchant", ...)     // ← 找不到，静默跳过
+```
+
+**而 `mixins.json` 里写了 `required: false`，所以失败连日志都不响** ——
+看起来就像"改了什么都没发生"。
+
+**怎么拿到正确的名字**：直接读整合包里那份 SRG jar：
+
+```
+D:\\PCL 正式版 2.12.6\\.minecraft\\libraries\\net\\minecraft\\client\\1.20.1-20230612.114412\\client-1.20.1-20230612.114412-srg.jar
+  → net/minecraft/world/item/enchantment/Enchantment
+      public boolean m_6081_(net.minecraft.world.item.ItemStack);   ← 原版的 canEnchant
+```
+
+**顺带发现**：`canApplyAtEnchantingTable` **不在原版 jar 里** ——
+它是 **Forge 加的方法**，不参与混淆，运行时名字就是它本身。
+
+**改法**：两个都加 `remap = false`（声明"这个名字已经对得上了，别再映射"），
+原版那个写 SRG 名 `m_6081_`。
+
+**代价**：开发环境（`runClient`）下这条 Mixin 不生效（那边用 MCP 名）。
+本项目只做 `build`，不影响出货 —— 但如果将来要跑 `runClient` 调试，得先解决插件问题。
+
+**教训**：
+- **`required: false` 是给"可选增强"用的**；核心功能应该 `required: true`，
+  让失败在启动时炸出来，而不是安静地什么都不做。
+- **"构建通过 + 文件在 jar 里"不等于"运行时有作用"** —— Mixin 这类
+  **运行期字节码修改**尤其如此，验证必须落到"游戏里的可见行为"。
+- **离线环境做 Mixin 是可行的**，代价是放弃 refmap、手写混淆名；
+  名字的来源是 SRG jar，不是记忆、不是猜测。
