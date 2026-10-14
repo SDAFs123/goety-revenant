@@ -382,3 +382,45 @@ MAGIC_CAPABLE_WEAPON        = create(..., i -> i.is(ItemTagRegistry.MAGIC_CAPABL
 |---|---|---|
 | **Malum 附魔 → Goety 镰刀** | ✅ 数据包已打通 | ✅ |
 | **Goety 附魔 → Malum 镰刀** | ⚠️ 取决于 Malum 镰刀是否 `WeaponItem`（反编译未取得该类，待实测） | ✅ 已打通 |
+
+
+### 镰刀附魔互通：自检数据 + 真正的原因（2026-10-14）
+
+**用户跑了一次游戏，日志里两段自检给出了决定性数据**：
+
+```
+===== 标签自检 =====
+  #malum:scythe                共 8 项  ｜ [在] goety:dark_scythe [在] goety:dark_metal_scythe …
+  #malum:soul_hunter_weapon    共 28 项 ｜ [在] goety:dark_scythe …
+  #malum:magic_capable_weapon  共 11 项 ｜ [在] goety:dark_scythe …
+  #goety_revenant:scythes      共 8 项  ｜ [在] goety:dark_scythe …
+
+===== Mixin 自检 =====
+  malum/animated  → goety/dark_scythe  : canEnchant=false  附魔台=false
+  malum/rebound   → goety/dark_scythe  : canEnchant=false  附魔台=false
+  malum/ascension → malum/crude_scythe : canEnchant=true   附魔台=true    ← 对照组
+```
+
+**结论**：
+
+1. **标签完全正常** —— `#malum:scythe` 里确实有 `goety:dark_scythe`。
+   **我此前"跨命名空间追加标签没生效"的判断是错的。**
+2. **对照组正常** —— Malum 附魔 → Malum 镰刀 = true，附魔本身没有任何问题。
+3. **我们的镰刀 false** —— 如果 Mixin 生效了，它判 `#goety_revenant:scythes`
+   （日志证明那里也有 `goety:dark_scythe`），**必然返回 true**。所以 **Mixin 根本没注入**。
+4. **日志里没有任何一行提到 `goety_revenant.mixins.json`** ——
+   而别的模组的 mixin 配置都有加载记录（连"缺 minVersion"的 ERROR 都有）。
+   **我们的配置连"被读取"都没发生。**
+
+**修法**：改用 Mixin 自己的标准入口 —— `jar` 任务的 manifest 里写 `MixinConfigs`：
+
+```gradle
+manifest {
+    attributes([
+        'MixinConfigs': 'goety_revenant.mixins.json',
+        …
+    ])
+}
+```
+
+Forge 的 `mods.toml` `[[mixins]]` 保留着当双保险，不再依赖它。
