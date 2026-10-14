@@ -426,8 +426,6 @@ public final class ScytheCompat {
     private static java.lang.reflect.Method REBOUND_THROW;
     /** 反射缓存：AscensionEnchantment.triggerAscension。 */
     private static java.lang.reflect.Method ASCENSION_TRIGGER;
-    /** 飞腾至少要给到这个向上初速（原版靠俯仰角，平视时为 0，这里兜底）。 */
-    private static final double ASCENSION_MIN_LIFT = 0.62D;
     private static boolean abilityResolved;
     private static boolean abilityFailed;
 
@@ -482,12 +480,18 @@ public final class ScytheCompat {
      */
     @SubscribeEvent
     public static void onRightClick(net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickItem event) {
-        if (event.getLevel().isClientSide()) {
-            return;
-        }
-        if (!(event.getEntity() instanceof ServerPlayer player)) {
-            return;
-        }
+        // ⚠️ **这里不能拦住客户端。**
+        //
+        // Malum 把 `triggerAscension` 分成两半（源码确认）：
+        //   客户端：setDeltaMovement(motion.x, player.getJumpPower() * 2f, motion.z)
+        //           —— "向上推"只在这一半里
+        //   服务端：算伤害、发粒子、打周围目标
+        // 而 `MalumScytheItem.use()` 是**双端**都会跑的。
+        // 我第一版在这里加了 `if (isClientSide) return;`，结果就是
+        // 「**不会往上推，但是往外推是可以的**」（用户 2026-10-14 的原话）——
+        // 外向推是服务端那一半，照常工作；向上推被整段跳过了。
+        // RightClickItem 的 getEntity() 本来就返回 Player，不用再判类型
+        net.minecraft.world.entity.player.Player player = event.getEntity();
         if (event.getHand() != net.minecraft.world.InteractionHand.MAIN_HAND) {
             return;
         }
@@ -509,19 +513,10 @@ public final class ScytheCompat {
                 return;
             }
             if (enchantLevel(stack, "ascension") > 0) {
+                // 原样转发即可 —— 原版内部自己分双端：
+                // 客户端做"向上推"（getJumpPower()*2 + onLivingJump），服务端做伤害与粒子。
+                // 我们只要**别拦客户端**，行为就和 Malum 自己的镰刀一致。
                 ASCENSION_TRIGGER.invoke(null, player.level(), player, event.getHand(), stack);
-                // **补一个"无条件向上推"** ——
-                // Malum 原版那段的 Y 分量取自玩家的**俯仰角**（
-                // {@code setDeltaMovement(motion.x, xRot * 2, motion.z)}），
-                // 所以平视甚至低头时 Y 分量是 0 或负的 ——「不会往上推」就是这么来的。
-                // 用户 2026-10-14：「飞腾在诡厄巫法镰刀上是无法使用的**不会往上推**，
-                // 但是往外推是可以的」，期望是**只要触发就该升空**。
-                // 抬着头时原版已经给了足够的推力，这里只在"推不上去"时才补，避免叠成火箭。
-                net.minecraft.world.phys.Vec3 v = player.getDeltaMovement();
-                if (v.y < ASCENSION_MIN_LIFT) {
-                    player.setDeltaMovement(v.x, ASCENSION_MIN_LIFT, v.z);
-                    player.hurtMarked = true;   // 让客户端收到这次速度变化
-                }
                 event.setCanceled(true);
                 event.setCancellationResult(net.minecraft.world.InteractionResult.SUCCESS);
             }

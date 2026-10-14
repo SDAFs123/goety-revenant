@@ -446,3 +446,66 @@ D:\\PCL 正式版 2.12.6\\.minecraft\\libraries\\net\\minecraft\\client\\1.20.1-
   这里就是直接调 `enchantment.canEnchant(ourScythe)`，而不是去猜标签、猜方法名。
 - **对照组极其重要**：`malum/ascension → malum/crude_scythe = true` 这一行，
   一下子排除了"附魔本身有问题"这整类可能。
+
+
+---
+
+## M-017 读字节码靠猜，还把自己加的 bug 当成"原版设计"
+
+**时间**：2026-10-14
+
+**用户原话**：「**直接查看源码飞腾怎么做不就行了**，而且**谁和你说平视**，
+我能发现飞腾问题不就是测试了**你的 bug**」
+
+**我错在哪（两层）**：
+
+**① 读字节码猜错方法，还当成事实讲给你听**
+
+反编译 `AscensionEnchantment.triggerAscension` 时看到：
+
+```
+31: aload_1
+38: invokevirtual m_6118_()      // 返回 float
+41: fconst_2
+42: fmul                       // * 2.0F
+49: setDeltaMovement(motion.x, ?, motion.z)
+```
+
+我没查 `m_6118_` 是什么，**猜**成"俯仰角"，由此编出一套解释
+（"平视时 Y 为 0，所以推不动"），还理直气壮地告诉你
+"Malum 自己的镰刀也是这个行为"。
+
+**源码一看就明白**：`m_6118_` 是 `player.getJumpPower()` —— **和俯仰角毫无关系**。
+
+**② 真正的 bug 是我自己写的**
+
+```java
+// 我在 onRightClick 开头写的：
+if (event.getLevel().isClientSide()) {
+    return;
+}
+```
+
+而 `triggerAscension` **是分双端的**（源码）：
+
+```java
+if (level.isClientSide()) {                    // 客户端：向上推
+    player.setDeltaMovement(motion.x, player.getJumpPower() * 2f, motion.z);
+    ForgeHooks.onLivingJump(player);
+} else {                                       // 服务端：伤害 + 粒子
+    …
+}
+```
+
+`MalumScytheItem.use()` **两端都跑**，我却按"事件处理器只在服务端做事"的惯性
+把客户端整个拦掉了 —— **向上推永远没机会执行，而"往外推"是服务端那半，照常工作**。
+这就是用户看到的「**不会往上推，但是往外推是可以的**」。
+
+**教训**：
+- **能看源码就看源码。** 反编译字节码适合"确认有没有某个调用"，
+  不适合"推断业务逻辑" —— 那种场合猜错一个 `m_xxxxx_` 就会做出完全错误的判断，
+  而且**错得很自信**。
+- **我上一轮已经查到"向上推是客户端、伤害是服务端"这条路上了**（见反编译输出里的
+  `Level.m_5776_()` = `isClientSide()`），却被自己的"俯仰角"假设带偏，没往那想。
+- **"原版就这行为"这句话是危险的口头禅** —— 说它之前必须有源码或实测支撑。
+  我这次用它来解释一个**我自己造成的**现象。
