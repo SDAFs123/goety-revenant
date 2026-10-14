@@ -426,6 +426,8 @@ public final class ScytheCompat {
     private static java.lang.reflect.Method REBOUND_THROW;
     /** 反射缓存：AscensionEnchantment.triggerAscension。 */
     private static java.lang.reflect.Method ASCENSION_TRIGGER;
+    /** 飞腾至少要给到这个向上初速（原版靠俯仰角，平视时为 0，这里兜底）。 */
+    private static final double ASCENSION_MIN_LIFT = 0.62D;
     private static boolean abilityResolved;
     private static boolean abilityFailed;
 
@@ -508,6 +510,18 @@ public final class ScytheCompat {
             }
             if (enchantLevel(stack, "ascension") > 0) {
                 ASCENSION_TRIGGER.invoke(null, player.level(), player, event.getHand(), stack);
+                // **补一个"无条件向上推"** ——
+                // Malum 原版那段的 Y 分量取自玩家的**俯仰角**（
+                // {@code setDeltaMovement(motion.x, xRot * 2, motion.z)}），
+                // 所以平视甚至低头时 Y 分量是 0 或负的 ——「不会往上推」就是这么来的。
+                // 用户 2026-10-14：「飞腾在诡厄巫法镰刀上是无法使用的**不会往上推**，
+                // 但是往外推是可以的」，期望是**只要触发就该升空**。
+                // 抬着头时原版已经给了足够的推力，这里只在"推不上去"时才补，避免叠成火箭。
+                net.minecraft.world.phys.Vec3 v = player.getDeltaMovement();
+                if (v.y < ASCENSION_MIN_LIFT) {
+                    player.setDeltaMovement(v.x, ASCENSION_MIN_LIFT, v.z);
+                    player.hurtMarked = true;   // 让客户端收到这次速度变化
+                }
                 event.setCanceled(true);
                 event.setCancellationResult(net.minecraft.world.InteractionResult.SUCCESS);
             }
