@@ -69,5 +69,46 @@ public final class TagAudit {
             LOG.info("[Goety: Revenant]   #{}  共 {} 项 ｜{}", raw, total, sb);
         }
         LOG.info("[Goety: Revenant] ===== 若上面 #malum:scythe 里 goety:* 显示 [  ]，说明数据包没生效 =====");
+
+        // ------------------------------------------------------------------
+        //  **Mixin 自检** —— 直接问一句"Malum 的镰刀附魔认不认 Goety 的镰刀"。
+        //
+        //  这句话会走到 Enchantment.canEnchant（Mixin 改的那个方法）：
+        //    返回 true  → Mixin 生效了
+        //    返回 false → Mixin 没注入（名字对不上 / 配置没被加载）
+        //
+        //  之所以要这么绕一层：Mixin 失败时 mixins.json 里 required=false 不会报错，
+        //  游戏能正常启动、只是功能静默失效 —— 必须主动问一次才看得出来。
+        // ------------------------------------------------------------------
+        LOG.info("[Goety: Revenant] ===== Mixin 自检（镰刀附魔互通）=====");
+        checkMixin("malum", "animated", "goety", "dark_scythe");
+        checkMixin("malum", "rebound", "goety", "dark_scythe");
+        checkMixin("malum", "ascension", "malum", "crude_scythe");
+        LOG.info("[Goety: Revenant] ===== 期望三行都是 true；有 false 说明 EnchantmentMixin 没生效 =====");
+    }
+
+    /** 打印"某条附魔认不认某个物品"。 */
+    private static void checkMixin(String enchNs, String enchPath, String itemNs, String itemPath) {
+        net.minecraft.world.item.enchantment.Enchantment ench =
+                BuiltInRegistries.ENCHANTMENT.get(new ResourceLocation(enchNs, enchPath));
+        Item item = BuiltInRegistries.ITEM.get(new ResourceLocation(itemNs, itemPath));
+        if (ench == null || item == net.minecraft.world.item.Items.AIR) {
+            LOG.info("[Goety: Revenant]   {}/{} → {}/{} : 模组缺席，跳过",
+                    enchNs, enchPath, itemNs, itemPath);
+            return;
+        }
+        ItemStack test = new ItemStack(item);
+        boolean can;
+        boolean table;
+        try {
+            can = ench.canEnchant(test);
+            table = ench.canApplyAtEnchantingTable(test);
+        } catch (Throwable t) {
+            LOG.info("[Goety: Revenant]   {}/{} → {}/{} : 判定抛异常 {}",
+                    enchNs, enchPath, itemNs, itemPath, t);
+            return;
+        }
+        LOG.info("[Goety: Revenant]   {}/{} → {}/{} : canEnchant={}  附魔台={}",
+                enchNs, enchPath, itemNs, itemPath, can, table);
     }
 }
