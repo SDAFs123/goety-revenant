@@ -123,6 +123,58 @@ public final class TagAudit {
             LOG.info("[Goety: Revenant] ===== malum:crude_scythe 是原生对照（天然 true）；"
                     + "goety:* 若为 false 说明接口注入没生效 =====");
         }
+
+        // ==================================================================
+        //  **Malum 反射链路体检**
+        //
+        //  本模组和 Malum 的联动大量依赖反射（因为 Malum 是 compileOnly 软依赖）。
+        //  反射失败是**静默**的 —— 拿不到就返回 null / false，功能悄悄没了，
+        //  游戏里看不出原因。这几轮踩的坑（Mixin 静默不注入、标签误判）
+        //  本质都是同一类问题，所以把每一条链路**逐跳**打出来：
+        //  哪一跳断了，日志里那一行就是 [FAIL]。
+        // ==================================================================
+        LOG.info("[Goety: Revenant] ===== Malum 反射链路体检 =====");
+        probe("Rebound.throwScythe", () -> Class.forName(
+                        "com.sammy.malum.common.enchantment.scythe.ReboundEnchantment")
+                .getMethod("throwScythe",
+                        net.minecraft.world.level.Level.class,
+                        net.minecraft.world.entity.player.Player.class,
+                        net.minecraft.world.InteractionHand.class,
+                        ItemStack.class).getName());
+        probe("Ascension.triggerAscension", () -> Class.forName(
+                        "com.sammy.malum.common.enchantment.scythe.AscensionEnchantment")
+                .getMethod("triggerAscension",
+                        net.minecraft.world.level.Level.class,
+                        net.minecraft.world.entity.player.Player.class,
+                        net.minecraft.world.InteractionHand.class,
+                        ItemStack.class).getName());
+        probe("LivingData.soulData", () -> Class.forName(
+                        "com.sammy.malum.common.capability.MalumLivingEntityDataCapability")
+                .getField("soulData").getName());
+        probe("SoulDataHandler.exposedSoulDuration", () -> Class.forName(
+                        "com.sammy.malum.core.handlers.SoulDataHandler")
+                .getField("exposedSoulDuration").getName());
+        probe("PlayerData.soulWardHandler", () -> Class.forName(
+                        "com.sammy.malum.common.capability.MalumPlayerDataCapability")
+                .getField("soulWardHandler").getName());
+        probe("SoulWardHandler.soulWard", () -> Class.forName(
+                        "com.sammy.malum.core.handlers.SoulWardHandler")
+                .getField("soulWard").getName());
+        probe("属性 malum:scythe_proficiency", () -> net.minecraft.core.registries.BuiltInRegistries.ATTRIBUTE
+                .containsKey(new ResourceLocation("malum", "scythe_proficiency")));
+        probe("属性 malum:magic_proficiency", () -> net.minecraft.core.registries.BuiltInRegistries.ATTRIBUTE
+                .containsKey(new ResourceLocation("malum", "magic_proficiency")));
+        LOG.info("[Goety: Revenant] ===== 上面每条都该是 [OK]；[FAIL] 的那条链路功能是静默失效的 =====");
+    }
+
+    /** 逐跳探测一条反射链路 —— 断了就把那一跳打在日志里。 */
+    private static void probe(String label, java.util.concurrent.Callable<Object> body) {
+        try {
+            Object r = body.call();
+            LOG.info("[Goety: Revenant]   [OK]   {} → {}", label, r);
+        } catch (Throwable t) {
+            LOG.info("[Goety: Revenant]   [FAIL] {} → {}", label, t);
+        }
     }
 
     /** 打印"某条附魔认不认某个物品"。 */

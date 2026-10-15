@@ -498,3 +498,30 @@ mixin/DeathScytheItemMixin.java     → goety:death_scythe
 启动日志 `===== 镰刀粒子颜色自检 =====` 会逐个打印
 `goety:dark_scythe instanceof ISpiritAffiliatedItem = ?`，
 并以原生的 `malum:crude_scythe` 作对照（它天然是 true）。
+
+
+### 反射链路体检（2026-10-15）
+
+**动机**：全项目扫描发现 **10 个类用了反射，其中 9 个没有任何失败日志** ——
+反射失败是静默的（拿不到就返回 null/false，功能悄悄没了）。
+这几轮踩的坑（Mixin 静默不注入、标签误判）本质是同一类问题。
+
+**做法**：在 `TagAudit` 的启动自检里加一段**逐跳探测**，
+把和 Malum 联动的每一条反射链路都打出来，断在哪一跳那一行就是 `[FAIL]`：
+
+```
+===== Malum 反射链路体检 =====
+  [OK]   Rebound.throwScythe → throwScythe
+  [OK]   Ascension.triggerAscension → triggerAscension
+  [OK]   LivingData.soulData → soulData
+  [OK]   SoulDataHandler.exposedSoulDuration → exposedSoulDuration
+  [OK]   PlayerData.soulWardHandler → soulWardHandler
+  [OK]   SoulWardHandler.soulWard → soulWard
+  [OK]   属性 malum:scythe_proficiency → true
+  [FAIL] 属性 malum:magic_proficiency → false      ← 若如此，则"魔法熟练度"这项在 Malum 里不存在
+```
+
+**顺带核对 9/27 那份镰刀规格**（15 条）：14 条已实现，
+唯一没在代码里找到对应的是「**镰刀造成的魔法伤害受魔法熟练度加成**」——
+那条的 `malum:magic_proficiency` 属性是否存在于 Malum，**由上面最后一行体检直接给出答案**，
+不再靠猜（M-017）。
