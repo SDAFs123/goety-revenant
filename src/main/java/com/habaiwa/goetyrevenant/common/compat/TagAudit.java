@@ -100,6 +100,29 @@ public final class TagAudit {
             LOG.info("[Goety: Revenant]   ★ 反射失败（会回落到按血量给魂）：{}", t);
         }
         LOG.info("[Goety: Revenant]   精魂→灵魂能量换算率：{} / 个", MalumCompat.SPIRIT_TO_SOULS);
+
+        // **镰刀粒子颜色自检**
+        // 颜色靠 Mixin 的【接口注入】—— 给 Goety 的镰刀类加上 Malum 的
+        // ISpiritAffiliatedItem。接口注入比方法注入更容易被静默拒绝，
+        // 所以直接问一句"这个物品实例到底算不算那个接口"。
+        LOG.info("[Goety: Revenant] ===== 镰刀粒子颜色自检 =====");
+        Class<?> spiritIface = null;
+        try {
+            spiritIface = Class.forName("com.sammy.malum.common.item.ISpiritAffiliatedItem");
+        } catch (Throwable ignored) {
+            LOG.info("[Goety: Revenant]   Malum 缺席，跳过");
+        }
+        if (spiritIface != null) {
+            for (String raw : new String[]{"goety:dark_scythe", "goety:dark_metal_scythe",
+                    "goety:death_scythe", "malum:crude_scythe"}) {
+                String[] p = raw.split(":", 2);
+                Item it = BuiltInRegistries.ITEM.get(new ResourceLocation(p[0], p[1]));
+                boolean impl = it != net.minecraft.world.item.Items.AIR && spiritIface.isInstance(it);
+                LOG.info("[Goety: Revenant]   {} instanceof ISpiritAffiliatedItem = {}", raw, impl);
+            }
+            LOG.info("[Goety: Revenant] ===== malum:crude_scythe 是原生对照（天然 true）；"
+                    + "goety:* 若为 false 说明接口注入没生效 =====");
+        }
     }
 
     /** 打印"某条附魔认不认某个物品"。 */

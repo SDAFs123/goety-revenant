@@ -460,3 +460,41 @@ shatterItem(ItemExpireEvent)              ← 物品寿命到了才碎成精魂
 **自检**（按 M-016 的教训 —— 反射成功与否只有运行时知道）：
 - 启动日志：`===== 精魂换算自检 =====` 打印反射是否可用
 - `/grdebug souls`：收掉几个精魂 / 发出多少魂 / 反射通不通 / 当前魂量
+
+
+### 镰刀粒子颜色改黑（2026-10-15）
+
+**依据**：用户 2026-10-14「**黑暗镰刀的飞腾产生的攻击特效应该同样改为黑色的**」。
+
+**机制**（Malum 源码）：
+
+```java
+// MalumScytheItem.hurtEvent / AscensionEnchantment.triggerAscension 两处都有：
+Item item = stack.getItem();
+if (item instanceof ISpiritAffiliatedItem affiliated) {
+    particleEffect.setSpiritType(affiliated);      // ← 唯一的颜色来源
+}
+
+public interface ISpiritAffiliatedItem {
+    MalumSpiritType getDefiningSpiritType();
+}
+```
+
+Goety 的镰刀没实现这个接口 → 走默认色。
+
+**做法**：Mixin 的**接口注入**（mixin 类 implements 目标接口，Mixin 会把接口真的加到目标类上）。
+
+```
+mixin/DarkScytheItemMixin.java      → goety:dark_scythe
+mixin/DarkMetalScytheMixin.java     → goety:dark_metal_scythe
+mixin/DeathScytheItemMixin.java     → goety:death_scythe
+   都 implements ISpiritAffiliatedItem，返回 SpiritTypeRegistry.UMBRAL_SPIRIT
+```
+
+**为什么选「幽影」**：`SpiritTypeRegistry` 的 9 种里 `UMBRAL_SPIRIT` 最暗；
+而且用户 2026-09-27 自己提过「**幽影精魂**」（跳进哭泣之井学的那种），用的是同一个词。
+
+**自检**（M-015/M-016 的教训 —— 接口注入比方法注入更容易被静默拒绝）：
+启动日志 `===== 镰刀粒子颜色自检 =====` 会逐个打印
+`goety:dark_scythe instanceof ISpiritAffiliatedItem = ?`，
+并以原生的 `malum:crude_scythe` 作对照（它天然是 true）。
