@@ -424,3 +424,39 @@ manifest {
 ```
 
 Forge 的 `mods.toml` `[[mixins]]` 保留着当双保险，不再依赖它。
+
+
+### 精魂拦截修错地方了（2026-10-15）
+
+**用户反馈**：「打怪会掉精魂，而不是额外的灵魂能量」。
+
+**根因**：我一直在拦 `LivingDropsEvent`，但**精魂根本不是掉落物**。
+反编译 Malum 1.20.1 的 `SpiritHarvestHandler`，它有**三个**入口：
+
+```
+spawnSpiritsOnDeath(LivingDeathEvent)     ← ★ 精魂在这里直接生成【实体】
+primeItemForShatter(LivingDropsEvent)     ← 只是给掉落物打"可碎"标记
+shatterItem(ItemExpireEvent)              ← 物品寿命到了才碎成精魂
+```
+
+生成走 `createSpiritEntities(...)` 往世界里加 `SpiritItemEntity`
+（`com.sammy.malum.common.entity.spirit.SpiritItemEntity extends FloatingItemEntity`）。
+**它压根不经过掉落表**，所以 `removeIf(isMalumSpirit)` 永远删不到东西。
+
+**修法**：
+
+1. **新拦截**：`LivingDeathEvent` + `EventPriority.LOWEST`
+   —— Malum 用默认的 NORMAL，我们在它**之后**跑，那时精魂实体已经在世界里，
+   直接 `discard()`（半径 6 格，覆盖散开范围）。
+   **挂在死亡事件上还有一个好处**：玩家用转化台产的精魂天然不受影响
+   （用户 2026-09-27：「精魄产出替代了灵魂能量……然后精魄采用转化，制作一个方块」）。
+2. **旧的 `onDrops` 保留**，万一将来 Malum 改回走掉落表。
+3. **灵魂能量改成"按精魂数换算"**：反射调 Malum 的
+   `SpiritHarvestHandler.getSpiritDropsRaw(LivingEntity)` 拿到"这只怪本该产几个精魂"，
+   × `SPIRIT_TO_SOULS`（600，可调）= 灵魂能量。
+   拿不到才回落到原来的"按血量给"。
+   这才是用户说的「**精魄产出替代了灵魂能量**」。
+
+**自检**（按 M-016 的教训 —— 反射成功与否只有运行时知道）：
+- 启动日志：`===== 精魂换算自检 =====` 打印反射是否可用
+- `/grdebug souls`：收掉几个精魂 / 发出多少魂 / 反射通不通 / 当前魂量

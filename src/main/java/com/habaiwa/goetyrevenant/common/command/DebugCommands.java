@@ -203,6 +203,45 @@ public final class DebugCommands {
         return 1;
     }
 
+    /**
+     * **诊断：精魂 → 灵魂能量这条链路**（`/grdebug souls`）。
+     *
+     * <p>回答三件事：本局收掉了几个精魂实体、发出去了多少灵魂能量、
+     * 以及"按精魂数换算"的反射通不通。用户 2026-10-15 反馈
+     * 「打怪会掉精魂，而不是额外的灵魂能量」时加的。</p>
+     */
+    private static int soulsDiag(CommandContext<CommandSourceStack> ctx) {
+        var src = ctx.getSource();
+        src.sendSuccess(() -> Component.literal("=== 精魂 → 灵魂能量 诊断 ===")
+                .withStyle(ChatFormatting.GOLD), false);
+        int swept = com.habaiwa.goetyrevenant.common.compat.MalumCompat.sweptSpirits();
+        long granted = com.habaiwa.goetyrevenant.common.compat.MalumCompat.soulsGranted();
+        src.sendSuccess(() -> Component.literal("本局收掉的精魂实体: " + swept
+                + (swept > 0 ? "  ✓ 拦截生效" : "  （还没杀过会产精魂的怪？）"))
+                .withStyle(swept > 0 ? ChatFormatting.GREEN : ChatFormatting.YELLOW), false);
+        src.sendSuccess(() -> Component.literal("本局发出的灵魂能量: " + granted)
+                .withStyle(granted > 0 ? ChatFormatting.GREEN : ChatFormatting.YELLOW), false);
+        boolean refl;
+        try {
+            Class.forName("com.sammy.malum.core.handlers.SpiritHarvestHandler")
+                    .getMethod("getSpiritDropsRaw", net.minecraft.world.entity.LivingEntity.class);
+            refl = true;
+        } catch (Throwable t) {
+            refl = false;
+        }
+        final boolean hasRefl = refl;
+        src.sendSuccess(() -> Component.literal("按精魂数换算的反射: " + (hasRefl
+                ? "可用（魂量 = 精魂数 × " + com.habaiwa.goetyrevenant.common.compat.MalumCompat.SPIRIT_TO_SOULS + "）"
+                : "不可用 —— 回落到按血量给魂"))
+                .withStyle(hasRefl ? ChatFormatting.GREEN : ChatFormatting.RED), false);
+        if (ctx.getSource().getPlayer() != null) {
+            ServerPlayer p = ctx.getSource().getPlayer();
+            src.sendSuccess(() -> Component.literal("你当前灵魂能量: "
+                    + com.Polarice3.Goety.utils.SEHelper.getSESouls(p)), false);
+        }
+        return 1;
+    }
+
     private static int whisper(CommandContext<CommandSourceStack> ctx) {
         return sound(ctx, "whisper");
     }
@@ -267,6 +306,8 @@ public final class DebugCommands {
                 // **诊断镰刀附魔互通** —— 手持物品打这条，看它到底在不在那些标签里、
                 // 每个 Malum/Goety 附魔认不认它。互通出问题时先看这里。
                 .then(Commands.literal("enchant").executes(DebugCommands::enchantDiag))
+                // 看"精魂→灵魂能量"这条链路到底有没有在工作
+                .then(Commands.literal("souls").executes(DebugCommands::soulsDiag))
                 // **血肉线**：调试三条路的进度（mutation / spirit / silicon / clear）
                 .then(Commands.literal("flesh")
                         .executes(DebugCommands::fleshStatus)

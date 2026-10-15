@@ -85,6 +85,21 @@ public final class TagAudit {
         checkMixin("malum", "rebound", "goety", "dark_scythe");
         checkMixin("malum", "ascension", "malum", "crude_scythe");
         LOG.info("[Goety: Revenant] ===== 期望三行都是 true；有 false 说明 EnchantmentMixin 没生效 =====");
+
+        // **精魂 → 灵魂能量的换算自检**
+        // 我们靠反射调 Malum 的 SpiritHarvestHandler.getSpiritDropsRaw 拿"本该产几个精魂"，
+        // 折算成灵魂能量。反射失败时那条路会静默回落到"按血量给"——
+        // 那种静默失效必须能看出来，所以这里直接问一次。
+        LOG.info("[Goety: Revenant] ===== 精魂换算自检 =====");
+        try {
+            Class<?> handler = Class.forName("com.sammy.malum.core.handlers.SpiritHarvestHandler");
+            java.lang.reflect.Method m = handler.getMethod("getSpiritDropsRaw",
+                    net.minecraft.world.entity.LivingEntity.class);
+            LOG.info("[Goety: Revenant]   SpiritHarvestHandler.getSpiritDropsRaw 可用 → {}", m != null);
+        } catch (Throwable t) {
+            LOG.info("[Goety: Revenant]   ★ 反射失败（会回落到按血量给魂）：{}", t);
+        }
+        LOG.info("[Goety: Revenant]   精魂→灵魂能量换算率：{} / 个", MalumCompat.SPIRIT_TO_SOULS);
     }
 
     /** 打印"某条附魔认不认某个物品"。 */
