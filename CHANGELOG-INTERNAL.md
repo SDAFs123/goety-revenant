@@ -525,3 +525,42 @@ mixin/DeathScytheItemMixin.java     → goety:death_scythe
 唯一没在代码里找到对应的是「**镰刀造成的魔法伤害受魔法熟练度加成**」——
 那条的 `malum:magic_proficiency` 属性是否存在于 Malum，**由上面最后一行体检直接给出答案**，
 不再靠猜（M-017）。
+
+
+### 整合包崩溃排查：EndingLibrary × GoetyRevelation 的 Mixin 冲突（2026-10-15）
+
+**现象**：2026-10-15 19:42 启动崩溃在 CONSTRUCT 阶段，
+`Failed to complete lifecycle event CONSTRUCT, 2 errors found`。
+
+**根因（crash report + 双向反编译，已钉死）**：
+
+```
+GoetyRevelation-2.3.4fix2.jar（内嵌 [Forge]RevelationFix-1.20.1-4.7.jar）
+  com.mega.revelationfix.mixin.gr.BossLoopMusicMixin
+  @WrapOperation(method = ["tick"],
+      at = @At(value="INVOKE",
+               target="Lnet/minecraft/client/sounds/SoundManager;queueTickingSound(...)V"))
+
+EndingLibrary-1.20.1-2.2.2-all.jar
+  com.mega.endinglib.mixin.time.time.SoundManagerMixin
+  @ModifyVariable(method = ["tick"], at = @At(value = "HEAD"))
+```
+
+**两者都改 `SoundManager.tick()`。** EndingLibrary 的 `@ModifyVariable` 在 HEAD 插入后，
+GoetyRevelation 的 `@WrapOperation` 扫不到原来那个 `queueTickingSound` 调用 →
+`(0/1) succeeded. Scanned 1 target(s)` → `InjectionError`（它没写 required=false）→
+`goety` 和 `revelationfix` 两个模组的自动订阅注册失败 → 崩溃。
+
+**排除依据**：114 个历史归档日志里 `setPost` / `Critical injection failure` 一次都没出现过；
+全 mods 目录只有 `EndingLibrary` 和 `irons_spellbooks` 碰 `SoundManager`；
+`EndingLibrary` 的文件时间戳是崩溃前 20 分钟（19:22 装入，19:42 崩溃）。
+**`goety_revenant` 在这份日志里零 ERROR。**
+
+**处置**：改 `EndingLibrary` 的 `ending_library.mixins.json`，
+从 `client` 列表移除 `time.time.SoundManagerMixin`（94 → 93 项），重新打包。
+- 原 jar 备份到 `versions/goety/endinglib-backup/`
+- 副作用：时停时 `SoundManager.tick` 的局部变量不再被改写，音效冻结可能不完整（功能级小事）
+
+**教训**：`BossLoopMusicMixin` 这种"没写 required=false 的注入"一旦失败就是**硬崩**，
+而报错文本里只有短名 `gr.BossLoopMusicMixin`，不知道属于哪个 jar ——
+必须顺着 `jarjar` 往里挖才找得到（`GoetyRevelation → META-INF/jarjar/[Forge]RevelationFix-*.jar`）。
