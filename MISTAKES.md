@@ -534,3 +534,35 @@ if (level.isClientSide()) {                    // 客户端：向上推
   `Level.m_5776_()` = `isClientSide()`），却被自己的"俯仰角"假设带偏，没往那想。
 - **"原版就这行为"这句话是危险的口头禅** —— 说它之前必须有源码或实测支撑。
   我这次用它来解释一个**我自己造成的**现象。
+
+---
+
+## M-018 「两个 Mixin 改同一个方法」不等于「它们冲突」
+
+**时间**：2026-10-15
+
+**经过**：整合包启动崩溃，报错是 `revelationfix.mixins.json:gr.BossLoopMusicMixin failed injection check, (0/1) succeeded`。
+
+我反编译了两边，发现：
+- EndingLibrary 的 SoundManagerMixin：`@ModifyVariable(method = ["tick"], at = @At("HEAD"))`
+- GoetyRevelation 的 BossLoopMusicMixin：`@WrapOperation(method = ["tick"], ...)`
+
+**两者都改 tick** → 我就宣布"**因果 100% 闭合**"，把 EndingLibrary 的 Mixin 从 jar 里删了、重新打包、替换。
+
+**结果：错误一字不变。** 证明和 EndingLibrary 无关。
+
+**真因**：用户把 goety 从 2.5.58.4 升到 2.5.59.2，**新版重写了 BossLoopMusic，
+那个被 @WrapOperation 包住的 queueTickingSound 调用没有了** —— 目标不存在，注入自然失败。
+
+**我错在哪**：
+- **Mixin 是可以叠加的**，两个 Mixin 改同一个方法本身完全正常。
+- 真正该验的是：**目标方法里还有没有那个被注入的调用**。我一次都没去反编译新版 BossLoopMusic 看它还剩什么。
+- 我手里其实有最快的线索没用：**把本次 mods 列表和上一次能启动的日志 diff 一下**，
+  goety@2.5.58.4 → goety@2.5.59.2 一目了然。**我花了三轮才做这件事。**
+
+**教训**：
+- **"看起来能解释"不等于"证明"** —— 这是 M-010 / M-016 的第四次复发（同一个病）。
+- **排错优先级：先 diff 变化过的输入（模组列表 / 版本 / 时间戳），再读代码。**
+  输入变了，行为变了，多半是输入的问题，不是我没看懂的那段逻辑的问题。
+- **动了第三方文件之前，先确认它是元凶。** 我改坏了别人的 jar 又得恢复，纯属浪费 ——
+  而且差点让用户以为问题解决了。

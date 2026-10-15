@@ -564,3 +564,42 @@ GoetyRevelation 的 `@WrapOperation` 扫不到原来那个 `queueTickingSound` �
 **教训**：`BossLoopMusicMixin` 这种"没写 required=false 的注入"一旦失败就是**硬崩**，
 而报错文本里只有短名 `gr.BossLoopMusicMixin`，不知道属于哪个 jar ——
 必须顺着 `jarjar` 往里挖才找得到（`GoetyRevelation → META-INF/jarjar/[Forge]RevelationFix-*.jar`）。
+
+### 【更正】崩溃真因：Goety 本体升级，不是 EndingLibrary（2026-10-15）
+
+**上面那条结论是错的**，特此更正（对 EndingLibrary 的改动已全部撤销，jar 已恢复原样）。
+
+**真因**：用户在 2026-10-15 **19:24:59** 把 goety 从 **2.5.58.4 升到 2.5.59.2**，
+而诡厄巫法在新版里**重写了 BossLoopMusic**：
+
+```
+新版 goety-2.5.59.2 的 BossLoopMusic 方法表：
+   public boolean m_7767_()       // isActive
+   public boolean isStale()
+   private void clear()
+   private void finish()
+   public void m_7788_()          // tick
+★ 里面没有 SoundManager.queueTickingSound(...) 这个调用
+```
+
+而 GoetyRevelation-2.3.4fix2 内嵌的 [Forge]RevelationFix-1.20.1-4.7.jar 里：
+
+```java
+@WrapOperation(method = ["tick"],
+    at = @At(value = "INVOKE",
+             target = "Lnet/minecraft/client/sounds/SoundManager;queueTickingSound(...)V"))
+```
+
+**它要包住的那个调用在新版里没了** → (0/1) succeeded. Scanned 1 target(s) →
+InjectionError（这个 Mixin 没写 required = false）→ goety 和 revelationfix
+两个模组的自动订阅注册失败 → CONSTRUCT 阶段硬崩。
+
+**时间戳吻合**：goety-2.5.59.2.jar 写入 19:24:59；第一次崩溃 19:42；第二次 21:49。
+
+**我第一次为什么搞错**：只凭"EndingLibrary 刚装 + 它有个 SoundManagerMixin +
+两边都改 SoundManager.tick"就下了"因果 100% 闭合"的结论。
+**"两个 Mixin 改同一个方法"不等于"它们冲突"** —— Mixin 完全可以叠加。
+真正的检验是**看目标方法里还有没有那个被注入的调用**，而我没做这一步。
+
+**正确做法**：把 mods 列表与上一次能启动的日志做 **diff**（goety@2.5.58.4 → 2.5.59.2 一眼可见），
+再去反编译新版的被注入类确认调用消失。两步，五分钟。
